@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./brewing:/brewing
+    env_file:
+      - .env
+
+  react:
+    build:
+      context: ./brewing/frontend
+      dockerfile: Dockerfile
+    container_name: react_app
+    ports:
+      - "3000:3000"
+    stdin_open: true # keep stdin open even if not attached
