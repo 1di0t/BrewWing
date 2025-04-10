@@ -14,7 +14,7 @@ steps:
         '-t', 'gcr.io/brewwing/brwewwing-backend:latest',
         # dockerfile path
         '-f', 'Dockerfile.backend',
-        'bewing/'
+        'brewing'
       ]
     secretEnv: ['BREW_WING_SECRET']
 
