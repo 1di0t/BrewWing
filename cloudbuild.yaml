@@ -14,7 +14,7 @@ steps:
         '-f', 'Dockerfile.backend',
         'backend'
       ]
-
+    secretEnv: ['BREW_WING_SECRET']
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -59,11 +59,11 @@ steps:
         '--region', 'us-central1',
         '--allow-unauthenticated'
       ]
-  # set env variables for backend
-    secretEnv: ['BREW_WING_SECRET']
+
+
 
 secrets:
 - secretEnv:
-    BREW_WING_SECRET: projects/brewwing/secrets/brew-wing-secret/versions/latest
+    BREW_WING_SECRET: projects/903635083978/secrets/brew-wing-secret/versions/latest
 
 timeout: 1200s 
