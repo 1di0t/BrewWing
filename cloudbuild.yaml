@@ -6,6 +6,7 @@ options:
 steps:
   
   # backend build and push
+  #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     args:
       [
@@ -25,13 +26,14 @@ steps:
         'gcr.io/brewwing/brwewwing-backend:latest'
       ]
   # frontend build and push
+  #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     args:
       [
         'build',
         '-t', 'gcr.io/brewwing/brewwing-frontend:latest',
-        '-f', 'Dockerfile.frontend',
-        'brewing/frontend'
+        '-f','brewing/frontend/Dockerfile.frontend',
+        '.'
       ]
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -40,6 +42,7 @@ steps:
         'gcr.io/brewwing/brewwing-frontend:latest'
       ]
   # backend deploy
+  #=========================================================================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -51,6 +54,7 @@ steps:
         '--allow-unauthenticated'
       ]
   # frontend deploy
+  #=========================================================================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
