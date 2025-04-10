@@ -60,10 +60,10 @@ steps:
         '--allow-unauthenticated'
       ]
   # set env variables for backend
-    secretEnv: ['brew-wing-secret']
+    secretEnv: ['BREW_WING_SECRET']
 
 secrets:
 - secretEnv:
-  MY_SECRET: projects/brewwing/secrets/brew-wing-secret/versions/latest
-  
+  BREW_WING_SECRET: projects/brewwing/secrets/brew-wing-secret/versions/latest
+
 timeout: 1200s 
