@@ -1,7 +1,9 @@
 # Cloud Build setting file
 # for Google Cloud Build
-
-
+options:
+  # logs_bucket
+  logs_bucket: gs://brew_wing_bucket
+  
 
 steps:
   
