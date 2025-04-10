@@ -1,6 +1,10 @@
 # Cloud Build setting file
 # for Google Cloud Build
+
+
+
 steps:
+  
   # backend build and push
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -10,11 +14,7 @@ steps:
         '-f', 'Dockerfile.backend',
         'backend'
       ]
-    secretEnv: ['MY_SECRET']
 
-    secrets:
-  - secretEnv:
-      MY_SECRET: projects/brewwing/secrets/MY_SECRET/versions/latest
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -59,4 +59,11 @@ steps:
         '--region', 'us-central1',
         '--allow-unauthenticated'
       ]
+  # set env variables for backend
+    secretEnv: ['brew-wing-secret']
+
+secrets:
+- secretEnv:
+  MY_SECRET: projects/brewwing/secrets/brew-wing-secret/versions/latest
+  
 timeout: 1200s 
