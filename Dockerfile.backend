@@ -8,7 +8,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # 소스 코드 복사
-COPY brew_wing /brew_wing
+COPY brewing /brewing
 
 # 포트 개방
 EXPOSE 8080
