@@ -1,0 +1,62 @@
+# Cloud Build setting file
+# for Google Cloud Build
+steps:
+  # backend build and push
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t', 'gcr.io/brewwing/brwewwing-backend:latest',
+        '-f', 'Dockerfile.backend',
+        'backend'
+      ]
+    secretEnv: ['MY_SECRET']
+
+    secrets:
+  - secretEnv:
+      MY_SECRET: projects/brewwing/secrets/MY_SECRET/versions/latest
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'gcr.io/brewwing/coffee-backend:latest'
+      ]
+  # frontend build and push
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t', 'gcr.io/brewwing/coffee-frontend:latest',
+        '-f', 'frontend/Dockerfile.frontend',
+        'frontend'
+      ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'gcr.io/brewwing/coffee-frontend:latest'
+      ]
+  # backend deploy
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      [
+        'run', 'deploy', 'coffee-backend',
+        '--image', 'gcr.io/$PROJECT_ID/coffee-backend:latest',
+        '--platform', 'managed',
+        '--region', 'us-central1',
+        '--allow-unauthenticated'
+      ]
+  # frontend deploy
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      [
+        'run', 'deploy', 'coffee-frontend',
+        '--image', 'gcr.io/$PROJECT_ID/coffee-frontend:latest',
+        '--platform', 'managed',
+        '--region', 'us-central1',
+        '--allow-unauthenticated'
+      ]
+timeout: 1200s 
