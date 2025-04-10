@@ -63,7 +63,7 @@ steps:
 
 
 secrets:
-- secretEnv:
-    BREW_WING_SECRET: projects/$PROJECT_ID/secrets/brew-wing-secret/versions/latest
+  - secretEnv:
+      BREW_WING_SECRET: "projects/brewwing/secrets/brew-wing-secret/versions/latest"
 
 timeout: 1200s 
