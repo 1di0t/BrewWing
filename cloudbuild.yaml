@@ -10,9 +10,11 @@ steps:
     args:
       [
         'build',
+        # tag the image
         '-t', 'gcr.io/brewwing/brwewwing-backend:latest',
+        # dockerfile path
         '-f', 'Dockerfile.backend',
-        'backend'
+        'bewing/'
       ]
     secretEnv: ['BREW_WING_SECRET']
 
@@ -28,8 +30,8 @@ steps:
       [
         'build',
         '-t', 'gcr.io/brewwing/coffee-frontend:latest',
-        '-f', 'frontend/Dockerfile.frontend',
-        'frontend'
+        '-f', 'brewing/frontend/Dockerfile.frontend',
+        'brewing/frontend'
       ]
   - name: 'gcr.io/cloud-builders/docker'
     args:
