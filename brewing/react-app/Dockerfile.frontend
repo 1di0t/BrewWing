@@ -1,6 +1,9 @@
 # Base image
 FROM node:18-alpine
 
+# Install build tools if needed
+RUN apk add --no-cache python3 make g++ 
+
 # Set working directory
 WORKDIR /app
 
@@ -14,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Build the React app for production
-RUN npm run build
+RUN npm run build --verbose
 
 # Expose port for the React app
 EXPOSE 3000
