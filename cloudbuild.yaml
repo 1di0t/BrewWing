@@ -32,8 +32,8 @@ steps:
       [
         'build',
         '-t', 'gcr.io/brewwing/brewwing-frontend:latest',
-        '-f','brewing/react-app/Dockerfile.frontend',
-        '.'
+        '-f','Dockerfile.frontend',
+        'brewing/react-app'
       ]
   - name: 'gcr.io/cloud-builders/docker'
     args:
