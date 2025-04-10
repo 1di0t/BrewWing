@@ -22,14 +22,14 @@ steps:
     args:
       [
         'push',
-        'gcr.io/brewwing/coffee-backend:latest'
+        'gcr.io/brewwing/brwewwing-backend:latest'
       ]
   # frontend build and push
   - name: 'gcr.io/cloud-builders/docker'
     args:
       [
         'build',
-        '-t', 'gcr.io/brewwing/coffee-frontend:latest',
+        '-t', 'gcr.io/brewwing/brewwing-frontend:latest',
         '-f', 'brewing/frontend/Dockerfile.frontend',
         'brewing/frontend'
       ]
@@ -37,15 +37,15 @@ steps:
     args:
       [
         'push',
-        'gcr.io/brewwing/coffee-frontend:latest'
+        'gcr.io/brewwing/brewwing-frontend:latest'
       ]
   # backend deploy
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       [
-        'run', 'deploy', 'coffee-backend',
-        '--image', 'gcr.io/$PROJECT_ID/coffee-backend:latest',
+        'run', 'deploy', 'brewwing-backend',
+        '--image', 'gcr.io/$PROJECT_ID/brewwing-backend:latest',
         '--platform', 'managed',
         '--region', 'us-central1',
         '--allow-unauthenticated'
@@ -55,8 +55,8 @@ steps:
     entrypoint: 'gcloud'
     args:
       [
-        'run', 'deploy', 'coffee-frontend',
-        '--image', 'gcr.io/$PROJECT_ID/coffee-frontend:latest',
+        'run', 'deploy', 'brewwing-frontend',
+        '--image', 'gcr.io/$PROJECT_ID/brewwing-frontend:latest',
         '--platform', 'managed',
         '--region', 'us-central1',
         '--allow-unauthenticated'
