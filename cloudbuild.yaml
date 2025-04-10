@@ -64,7 +64,7 @@ steps:
 
 availableSecrets:
   secretManager:
-    - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
+    - versionName: "projects/903635083978/secrets/brew-wing-secret"
       env: "BREW_WING_SECRET"
 
 timeout: 1200s 
