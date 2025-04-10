@@ -14,7 +14,7 @@ services:
 
   react:
     build:
-      context: ./brewing/frontend
+      context: ./brewing/react-app
       dockerfile: Dockerfile
     container_name: react_app
     ports:
