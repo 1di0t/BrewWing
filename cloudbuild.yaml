@@ -30,7 +30,7 @@ steps:
       [
         'build',
         '-t', 'gcr.io/brewwing/brewwing-frontend:latest',
-        '-f', 'brewing/frontend/Dockerfile.frontend',
+        '-f', 'Dockerfile.frontend',
         'brewing/frontend'
       ]
   - name: 'gcr.io/cloud-builders/docker'
