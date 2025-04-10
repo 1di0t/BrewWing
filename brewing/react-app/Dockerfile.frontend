@@ -8,7 +8,7 @@ RUN apk add --no-cache python3 make g++
 WORKDIR /app
 
 # Copy package.json and package-lock.json files
-COPY brewing/react-app/package.json brewing/react-app/package-lock.json brewing/react-app/
+COPY brewing/react-app/package.json brewing/react-app/package-lock.json ./
 
 # Install dependencies
 RUN npm install
