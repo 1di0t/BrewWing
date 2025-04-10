@@ -5,7 +5,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy package.json and package-lock.json files
-COPY brewing/react-app/package.json pbrewing/react-app/ackage-lock.json brewing/react-app/
+COPY brewing/react-app/package.json brewing/react-app/package-lock.json brewing/react-app/
 
 # Install dependencies
 RUN npm install
