@@ -1,5 +1,5 @@
 import React from "react";
-import "src/components/chatwindow.css";
+import "./components/chatwindow.css";
 
 function ChatWindow({ messages }) {
   console.log(messages);
