@@ -4,14 +4,11 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json files
-COPY brewing/react-app/package.json brewing/react-app/package-lock.json ./
+# Copy react-app files
+COPY brewing/react-app/ ./
 
 # Install dependencies
 RUN npm install
-
-# Copy project files
-COPY brewing/react-app/ ./
 
 # Build the React app for production
 RUN npm run build --verbose
