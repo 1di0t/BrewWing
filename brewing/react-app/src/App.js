@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import ChatWindow from "src/components/chatWindow";
-import InputBar from "src/components/inputBar";
-import "src/App.css";
+import ChatWindow from "./components/chatWindow";
+import InputBar from "./components/inputBar";
+import "./App.css";
 
 function App() {
   const [messages, setMessages] = useState([]);
