@@ -12,7 +12,7 @@ steps:
       [
         'build',
         # tag the image
-        '-t', 'gcr.io/brewwing/brwewwing-backend:latest',
+        '-t', 'gcr.io/brewwing/brewwing-backend:latest',
         # dockerfile path
         '-f', 'Dockerfile.backend',
         '.'
@@ -23,7 +23,7 @@ steps:
     args:
       [
         'push',
-        'gcr.io/brewwing/brwewwing-backend:latest'
+        'gcr.io/brewwing/brewwing-backend:latest'
       ]
   # frontend build and push
   #=========================================================================
