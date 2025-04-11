@@ -1,6 +1,6 @@
 // src/components/InputBar.js
 import React, { useState } from "react";
-import "./components/inputBar.css";
+import "./inputBar.css";
 
 function InputBar({ onSendMessage }) {
   const [inputValue, setInputValue] = useState("");
