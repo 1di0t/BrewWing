@@ -51,7 +51,8 @@ steps:
         '--image', 'gcr.io/$PROJECT_ID/brewwing-backend:latest',
         '--platform', 'managed',
         '--region', 'us-central1',
-        '--allow-unauthenticated'
+        '--allow-unauthenticated',
+        'timeout', '1200s',
       ]
   # frontend deploy
   #=========================================================================
