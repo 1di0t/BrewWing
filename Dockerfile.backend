@@ -1,21 +1,26 @@
 FROM python:3.10-slim
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings
+ENV PORT=8080
 
-# 작업 디렉토리 설정
+# set directory to /app
 WORKDIR /app
 
-# 종속성 파일 복사 후 설치
+# system dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# 소스 코드 복사
+# copy project files
 COPY brewing ./brewing
 
-# 포트 개방
+# migrate database and collect static files
+RUN python manage.py migrate --noinput
+RUN python manage.py collectstatic --noinput
+
+# expose port 8080 for the server
 EXPOSE 8080
 
-# 서버 실행
+# start the server using gunicorn
 CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 3"]
 
 
