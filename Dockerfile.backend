@@ -8,10 +8,11 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # 소스 코드 복사
-COPY brewing /brewing
+COPY brewing ./brewing
 
 # 포트 개방
 EXPOSE 8080
 
 # 서버 실행
 CMD ["gunicorn", "brewing.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "3"]
+
