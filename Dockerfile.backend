@@ -14,9 +14,6 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # copy project files
 COPY brewing/ .
 
-RUN python manage.py migrate --noinput
-RUN python manage.py collectstatic --noinput
-
 # expose port 8080 for the server
 EXPOSE 8080
 
