@@ -1,5 +1,7 @@
 FROM python:3.10-slim
 
+ENV DJANGO_SETTINGS_MODULE=brewing.settings
+
 # 작업 디렉토리 설정
 WORKDIR /app
 
@@ -14,5 +16,6 @@ COPY brewing ./brewing
 EXPOSE 8080
 
 # 서버 실행
-CMD ["gunicorn", "brewing.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "3"]
+CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 3"]
+
 
