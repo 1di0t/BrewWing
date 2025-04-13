@@ -4,7 +4,7 @@ import InputBar from "./components/inputBar";
 import "./App.css";
 
 function App() {
-  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
