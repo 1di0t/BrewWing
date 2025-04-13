@@ -4,11 +4,12 @@ import InputBar from "./components/inputBar";
 import "./App.css";
 
 function App() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8080";
 
   // CSRF 토큰 가져오기
   useEffect(() => {
