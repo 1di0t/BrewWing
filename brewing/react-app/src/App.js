@@ -8,7 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
 
-  const backendUrl = "http://localhost:8080";
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8080";
 
   // CSRF 토큰 가져오기
   useEffect(() => {
