@@ -73,4 +73,4 @@ availableSecrets:
     - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
       env: "BREW_WING_SECRET"
 
-timeout: 1200s 
+timeout: 2400s 
