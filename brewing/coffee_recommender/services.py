@@ -17,7 +17,7 @@ load_dotenv()
 
 huggingface_token = os.getenv("HUGGINGFACE_API_KEY")
 
-# 글로벌 변수 초기화 (Django에서는 Lazy Initialization 방식 사용)
+
 coffee_qa_chain = None
 
 def initialize_coffee_chain():

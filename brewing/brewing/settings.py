@@ -37,16 +37,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
     'rest_framework',
     'coffee_recommender',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -55,8 +55,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'brewing.urls'
 
-# Configure static and media files
-STATIC_URL = '/static/'
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
@@ -149,7 +148,7 @@ CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 # CSRF 쿠키 설정
 CSRF_COOKIE_SECURE = True  # 개발 환경에서는 False
 CSRF_COOKIE_SAMESITE = 'Lax'  # SameSite 설정
-CSRF_USE_SESSIONS = True
+#CSRF_USE_SESSIONS = True
 
 
 
@@ -162,10 +161,3 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ]
 }
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-logger.info(f"DEBUG={DEBUG}")
-logger.info(f"ALLOWED_HOSTS={ALLOWED_HOSTS}")
