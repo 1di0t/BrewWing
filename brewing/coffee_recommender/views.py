@@ -9,7 +9,6 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from .services import initialize_coffee_chain, recommend_coffee
 from django.middleware.csrf import get_token
 
-# 서버 시작 시 체인 초기화 (Lazy Initialization 방식)
 initialize_coffee_chain()
 
 @ensure_csrf_cookie
