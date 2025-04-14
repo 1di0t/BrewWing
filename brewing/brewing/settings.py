@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 ALLOWED_HOSTS = [
+    'brewwing-backend-903635083978.us-central1.run.app',
     'brewwing-frontend-903635083978.us-central1.run.app',
-    'brewwing-backend-903635083978.us-central1.run.app'
     ]
 
 
@@ -141,10 +141,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
+    "https://brewwing-backend-903635083978.us-central1.run.app",
+    "https://brewwing-frontend-903635083978.us-central1.run.app",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://brewwing-frontend-903635083978.us-central1.run.app",
-    "https://brewwing-backend-903635083978.us-central1.run.app"
 ]
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 

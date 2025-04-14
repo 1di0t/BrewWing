@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from django.conf import settings
+from asgiref.sync import sync_to_async
 
 from utils.data_processing import load_and_preprocess_coffee_data
 from utils.vector_store import create_vector_store_from_coffee_df
@@ -39,7 +40,7 @@ def initialize_coffee_chain():
     # 체인 생성
     coffee_qa_chain = create_coffee_retrieval_qa_chain(llm, vectorstore)
 
-def recommend_coffee(query: str) -> dict:
+async def recommend_coffee(query: str) -> dict:
     """
     Process user query and return the coffee recommendation.
     
@@ -55,10 +56,10 @@ def recommend_coffee(query: str) -> dict:
         raise ValueError("Coffee QA Chain is not initialized. Call initialize_coffee_chain() first.")
 
     # 체인 실행 (질문 처리)
-    answer = coffee_qa_chain.invoke({"query": query})
+    answer = await coffee_qa_chain.invoke({"query": query})
 
     # 결과 텍스트 추출 및 번역 처리
-    answer['result'] = extract_origin_text(answer['result'])
-    answer['result'] = translate_with_linebreaks(answer['result'])
+    answer['result'] = await extract_origin_text(answer['result'])
+    answer['result'] = await translate_with_linebreaks(answer['result'])
 
     return {"answer": answer}
