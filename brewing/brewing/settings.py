@@ -37,10 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'corsheaders',
     'rest_framework',
-
     'coffee_recommender',
 ]
 
@@ -164,3 +162,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ]
 }
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+logger.info(f"DEBUG={DEBUG}")
+logger.info(f"ALLOWED_HOSTS={ALLOWED_HOSTS}")
