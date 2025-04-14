@@ -22,7 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 
-ALLOWED_HOSTS = ['brewwing-frontend-903635083978.us-central1.run.app']
+ALLOWED_HOSTS = [
+    'brewwing-frontend-903635083978.us-central1.run.app',
+    'brewwing-backend-903635083978.us-central1.run.app'
+    ]
 
 
 # Application definition
