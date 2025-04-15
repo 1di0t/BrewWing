@@ -2,8 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse
-from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+from asgiref.sync import sync_to_async
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .services import initialize_coffee_chain, recommend_coffee
@@ -20,7 +21,7 @@ class CoffeeRecommendationView(APIView):
     authentication_classes = []  # 인증 비활성화 (CSRF만 검증)
     permission_classes = [AllowAny] 
 
-    def post(self, request):
+    async def post(self, request):
         """
         POST 요청 처리: 사용자 질문 기반 커피 추천
         """
@@ -34,7 +35,7 @@ class CoffeeRecommendationView(APIView):
                 )
 
             # 서비스 계층 호출
-            recommendation = recommend_coffee(user_query)
+            recommendation = await recommend_coffee(user_query)
             
             return Response({
                 "response": {
