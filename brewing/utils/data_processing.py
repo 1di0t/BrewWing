@@ -12,7 +12,7 @@ def load_and_preprocess_coffee_data(csv_path: str) -> pd.DataFrame:
     required_columns = ["origin", "desc_1", "desc_3", "roast", "agtron"]
     for col in required_columns:
         if col not in df.columns:
-            raise ValueError(f"[에러] {col} 컬럼이 CSV에 없습니다.")
+            raise ValueError(f"[Error] {col} does not exist in the CSV file.")
     
     # preprocess text columns
     text_cols = ["origin", "desc_1", "desc_3", "roast", "agtron"]
