@@ -19,7 +19,7 @@ EXPOSE 8080
 
 # start the server using gunicorn
 
-CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 3 --timeout 600"]
+CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 3 --timeout 600 --preload"]
 
 
 
