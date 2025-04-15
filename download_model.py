@@ -9,7 +9,7 @@ MODEL_IDS = [
 ]
 
 # directory to cache the models
-cache_dir = os.path.join(os.getcwd(), "model_cache")
+cache_dir = "./cache_dir"
 os.makedirs(cache_dir, exist_ok=True)
 
 def download_model(model_id):
