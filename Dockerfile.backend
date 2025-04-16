@@ -3,7 +3,6 @@ FROM python:3.10-slim
 # set directory to /app
 WORKDIR /app
 
-ENV TRANSFORMERS_OFFLINE=1
 ENV DJANGO_SETTINGS_MODULE=brewing.settings
 ENV PORT=8080
 
@@ -12,18 +11,14 @@ ENV PORT=8080
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# copy the model download script
-COPY download_model.py .
+
+# copy project files
 COPY brewing/ .
 
-# make the models directory
-RUN mkdir -p /app/models
 
 # model cache directory
-RUN mkdir -p /app/cache_dir
+RUN mkdir -p /app/huggingface_cache
 
-# download the model
-RUN python download_model.py
 
 # expose port 8080 for the server
 EXPOSE 8080
