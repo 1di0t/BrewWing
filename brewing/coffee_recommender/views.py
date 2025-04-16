@@ -13,7 +13,7 @@ from django.middleware.csrf import get_token
 initialize_coffee_chain()
 
 @ensure_csrf_cookie
-def get_csrf_token(request):
+async def get_csrf_token(request):
     return JsonResponse({'csrfToken': get_token(request)})
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
@@ -50,7 +50,7 @@ class CoffeeRecommendationView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def get(self, request):
+    async def get(self, request):
         """CSRF 토큰 발급 엔드포인트"""
         return Response(
             {"csrfToken": request.META.get("CSRF_COOKIE")},
