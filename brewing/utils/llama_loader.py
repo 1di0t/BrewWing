@@ -1,7 +1,5 @@
 import os
-os.environ["HF_HOME"] = "E:\self\huggingface_cache"
-
-
+os.environ["HF_HOME"] = "/app/huggingface_cache"
 
 
 def load_llama_llm(model_name_or_path="meta-llama/Llama-2-7b-hf", token=None):
