@@ -34,7 +34,7 @@ async def initialize_coffee_chain():
     vectorstore = create_vector_store_from_coffee_df(coffee_df)
 
     # LLM 로드 (Hugging Face 모델)
-    llm = load_llama_llm("app/models/Llama-3.2-1B", token=huggingface_token)
+    llm = load_llama_llm("meta-llama/Llama-3.2-1B", token=huggingface_token)
 
     # 체인 생성
     coffee_qa_chain = create_coffee_retrieval_qa_chain(llm, vectorstore)
