@@ -2,7 +2,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 import pandas as pd
 import os
-cache_dir = os.getenv("TRANSFORMERS_CACHE", "/app/huggingface_cache")
+cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 hugginhgface_token = os.getenv("HUGGINGFACE_API_KEY")
 
 def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):

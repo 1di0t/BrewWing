@@ -16,7 +16,7 @@ def load_llama_llm(model_name_or_path="meta-llama/Llama-2-7b-hf", token=None):
     from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
     from langchain_huggingface import HuggingFacePipeline
 
-    cache_dir = os.getenv("TRANSFORMERS_CACHE", "/app/huggingface_cache")
+    cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_name_or_path, 
