@@ -55,11 +55,13 @@ async def recommend_coffee(query: str) -> dict:
     if coffee_qa_chain is None:
         raise ValueError("Coffee QA Chain is not initialized. Call initialize_coffee_chain() first.")
 
-    # 체인 실행 (질문 처리)
-    answer = await coffee_qa_chain.invoke({"query": query})
+    try:
+        # 체인 실행 (질문 처리)
+        answer = await coffee_qa_chain.invoke({"query": query})
+    except Exception as e:
+        print(f"Error during chain invocation: {e}")
+        # 결과 텍스트 추출 및 번역 처리
+        answer['result'] = await extract_origin_text(answer['result'])
+        answer['result'] = await translate_with_linebreaks(answer['result'])
 
-    # 결과 텍스트 추출 및 번역 처리
-    answer['result'] = await extract_origin_text(answer['result'])
-    answer['result'] = await translate_with_linebreaks(answer['result'])
-
-    return {"answer": answer}
+        return {"answer": answer}
