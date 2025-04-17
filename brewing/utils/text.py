@@ -22,7 +22,7 @@ target_lang = 'kor_Hang'  # target language
 
 translator = pipeline(
     'translation',
-    model='facebook/nllb-200-distilled-600M',
+    model='./models/nllb-200-distilled-600M',
     cache_dir=cache_dir, 
     local_files_only=True,
     device=0,
