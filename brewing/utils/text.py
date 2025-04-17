@@ -1,6 +1,6 @@
 import re
 import os
-cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
+cache_dir = os.getenv("TRANSFORMERS_CACHE", "/app/huggingface_cache")
 
 def extract_origin_text(data: str) -> str:
     """
@@ -22,7 +22,7 @@ target_lang = 'kor_Hang'  # target language
 
 translator = pipeline(
     'translation',
-    model='nllb-200-distilled-600M',
+    model='facebook/nllb-200-distilled-600M',
     cache_dir=cache_dir, 
     device=0,
     src_lang='eng_Latn',  # input language
