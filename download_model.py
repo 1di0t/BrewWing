@@ -14,17 +14,13 @@ os.makedirs(cache_dir, exist_ok=True)
 
 def download_model(model_id):
     try:
-        print(f"Downloading tokenizer for {model_id}...")
         tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)
-        print(f"Tokenizer for {model_id} downloaded.")
+        tokenizer.save_pretrained("./models/" + model_id.split("/")[-1])
 
-        print(f"Downloading model for {model_id}...")
+        
         model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=cache_dir)
-        print(f"Model for {model_id} downloaded.")
+        model.save_pretrained("./models/" + model_id.split("/")[-1])
 
-        print(f"Downloading configuration for {model_id}...")
-        config = AutoConfig.from_pretrained(model_id, cache_dir=cache_dir)
-        print(f"Configuration for {model_id} downloaded.")
 
     except Exception as e:
         print(f"Error downloading {model_id}: {e}")
