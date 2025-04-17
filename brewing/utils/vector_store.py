@@ -1,6 +1,9 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 import pandas as pd
+import os
+cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
+hugginhgface_token = os.getenv("HUGGINGFACE_API_KEY")
 
 def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):
     """
@@ -8,7 +11,14 @@ def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):
     Create embeddings → Build a FAISS vector store.
     """
 
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embedding_model = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={
+            "cache_dir":cache_dir, 
+            "local_files_only":True,
+            "use_auth_token": hugginhgface_token,
+            },
+        )
     
     texts = []
     metadatas = []

@@ -3,6 +3,9 @@ FROM python:3.10-slim
 # set directory to /app
 WORKDIR /app
 
+# set environment variables
+ENV HF_HOME=/app/huggingface_cache
+ENV TRANSFORMERS_OFFLINE=1
 ENV DJANGO_SETTINGS_MODULE=brewing.settings
 ENV PORT=8080
 
@@ -14,17 +17,21 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # copy project files
 COPY brewing/ .
-
+COPY download_model.py .
 
 # model cache directory
 RUN mkdir -p /app/huggingface_cache
 
+# copy model cache files to the cache directory
+COPY model_cache/ /app/huggingface_cache/hub/
+
+#  run the download_model.py script to download the model files
+RUN python download_model.py
 
 # expose port 8080 for the server
 EXPOSE 8080
 
 # start the server using gunicorn
-
 CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 600 --preload"]
 
 
