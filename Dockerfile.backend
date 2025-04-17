@@ -4,11 +4,9 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # set environment variables
-ENV HF_HOME=/app/huggingface_cache
 ENV DJANGO_SETTINGS_MODULE=brewing.settings
 ENV PORT=8080
 
-RUN mkdir -p $HF_HOME
 
 # system dependencies
 COPY requirements.txt .
@@ -19,13 +17,16 @@ RUN mkdir -p /app/huggingface_cache
 
 # copy project files
 COPY brewing/ .
+
 COPY download_model.py .
 
 #  run the download_model.py script to download the model files
 RUN python download_model.py
 
-# set offline mode for transformers
+# set offline mode for transformers and HF Hub
 ENV TRANSFORMERS_OFFLINE=1
+ENV HF_HUB_OFFLINE=1
+ENV TRANSFORMERS_CACHE=/app/huggingface_cache
 
 # expose port 8080 for the server
 EXPOSE 8080

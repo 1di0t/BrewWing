@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from django.conf import settings
-from asgiref.sync import sync_to_async
 
 from utils.data_processing import load_and_preprocess_coffee_data
 from utils.vector_store import create_vector_store_from_coffee_df
@@ -20,7 +19,7 @@ huggingface_token = os.getenv("HUGGINGFACE_API_KEY")
 
 coffee_qa_chain = None
 
-def initialize_coffee_chain():
+async def initialize_coffee_chain():
     """
     Initialize the Coffee QA Chain when the server starts.
     """
@@ -35,7 +34,7 @@ def initialize_coffee_chain():
     vectorstore = create_vector_store_from_coffee_df(coffee_df)
 
     # LLM 로드 (Hugging Face 모델)
-    llm = load_llama_llm("./models/Llama-3.2-1B", token=huggingface_token)
+    llm = load_llama_llm("app/models/Llama-3.2-1B", token=huggingface_token)
 
     # 체인 생성
     coffee_qa_chain = create_coffee_retrieval_qa_chain(llm, vectorstore)
