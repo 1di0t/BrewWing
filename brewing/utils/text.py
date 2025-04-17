@@ -1,6 +1,6 @@
 import re
 import os
-cache_dir = os.getenv("TRANSFORMERS_CACHE", "/app/huggingface_cache")
+cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 
 def extract_origin_text(data: str) -> str:
     """

@@ -28,7 +28,6 @@ ENV TRANSFORMERS_OFFLINE=1
 ENV HF_HUB_OFFLINE=1
 
 # set cache directory for transformers
-ENV TRANSFORMERS_CACHE=/app/huggingface_cache
 ENV HF_HOME=/app/huggingface_cache
 
 # expose port 8080 for the server
