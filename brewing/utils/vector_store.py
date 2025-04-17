@@ -12,7 +12,7 @@ def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):
     """
 
     embedding_model = HuggingFaceEmbeddings(
-        model_name="./models/all-MiniLM-L6-v2",
+        model_name="app/models/all-MiniLM-L6-v2",
         model_kwargs={
             "cache_dir":cache_dir, 
             "local_files_only":True,

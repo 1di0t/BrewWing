@@ -22,13 +22,13 @@ target_lang = 'kor_Hang'  # target language
 
 translator = pipeline(
     'translation',
-    model='./models/nllb-200-distilled-600M',
+    model='nllb-200-distilled-600M',
     cache_dir=cache_dir, 
-    local_files_only=True,
     device=0,
     src_lang='eng_Latn',  # input language
     tgt_lang=target_lang,  # output language
-    max_length=512
+    max_length=512,
+    model_kwargs={"local_files_only": True}
 )
 
 def translate_with_linebreaks(text):

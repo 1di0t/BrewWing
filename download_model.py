@@ -1,5 +1,5 @@
 import os
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
+from huggingface_hub import snapshot_download
 
 # list of model IDs to download
 MODEL_IDS = [
@@ -14,12 +14,18 @@ os.makedirs(cache_dir, exist_ok=True)
 
 def download_model(model_id):
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)
-        tokenizer.save_pretrained("./models/" + model_id.split("/")[-1])
+        snapshot_download(
+            repo_id=model_id,
+            cache_dir=cache_dir,
+            local_dir_use_symlinks=False,
+        )
+
+        # tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)
+        # tokenizer.save_pretrained("app/models/" + model_id.split("/")[-1])
 
         
-        model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=cache_dir)
-        model.save_pretrained("./models/" + model_id.split("/")[-1])
+        # model = AutoModel.from_pretrained(model_id, cache_dir=cache_dir)
+        # model.save_pretrained("app/models/" + model_id.split("/")[-1])
 
 
     except Exception as e:

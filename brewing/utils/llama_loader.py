@@ -1,6 +1,4 @@
 import os
-os.environ["HF_HOME"] = "/app/huggingface_cache"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 
 def load_llama_llm(model_name_or_path="meta-llama/Llama-2-7b-hf", token=None):
@@ -28,11 +26,11 @@ def load_llama_llm(model_name_or_path="meta-llama/Llama-2-7b-hf", token=None):
         )
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
-        device_map="auto",        
-        torch_dtype="auto",       
         token=token,
         cache_dir=cache_dir, 
-        local_files_only=True
+        local_files_only=True,
+        torch_dtype="auto",       
+        device_map="auto",        
     )
     generation_pipeline = pipeline(
         "text-generation",
