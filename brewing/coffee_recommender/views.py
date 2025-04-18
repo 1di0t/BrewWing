@@ -1,9 +1,10 @@
+import traceback
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse
 from rest_framework.permissions import AllowAny
-from asgiref.sync import sync_to_async
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 
@@ -45,6 +46,7 @@ class CoffeeRecommendationView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            print(traceback.format_exc())
             return Response(
                 {"error": f"서버 오류: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
