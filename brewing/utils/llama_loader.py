@@ -1,7 +1,7 @@
 
 
 
-def load_llama_llm(model_name_or_path="meta-llama/Llama-2-7b-hf", token=None):
+def load_llama_llm(model_name_or_path="meta-llama/Llama-3.2-1B", token=None):
     """
     - Llama2 model load (GPU environment recommended)
     - token: Hugging Face access token 
