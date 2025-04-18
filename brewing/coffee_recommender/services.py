@@ -20,7 +20,7 @@ cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 
 coffee_qa_chain = None
 
-async def initialize_coffee_chain():
+def initialize_coffee_chain():
     """
     Initialize the Coffee QA Chain when the server starts.
     """

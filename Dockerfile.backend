@@ -6,7 +6,7 @@ WORKDIR /app
 # set environment variables
 ENV DJANGO_SETTINGS_MODULE=brewing.settings
 ENV PORT=8080
-
+ENV PYTHONTRACEMALLOC=10
 
 # system dependencies
 COPY requirements.txt .
@@ -36,7 +36,7 @@ ENV HF_HUB_OFFLINE=1
 EXPOSE 8080
 
 # start the server using gunicorn
-CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 600 --capture-output --log-level=debug"]
+CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 600 --capture-output --log-level debug"]
 
 
 
