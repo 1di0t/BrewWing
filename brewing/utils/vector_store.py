@@ -4,6 +4,7 @@ import pandas as pd
 import os
 
 hugginhgface_token = os.getenv("HUGGINGFACE_API_KEY")
+cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 
 def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):
     """
@@ -12,7 +13,7 @@ def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):
     """
 
     embedding_model = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_name=cache_dir+"/all-MiniLM-L6-v2",
         model_kwargs={
             "local_files_only":True,
             },
