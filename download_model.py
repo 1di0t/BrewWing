@@ -13,7 +13,7 @@ cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 
 
 def download_model(model_id):
-    local_dir = os.path.join(cache_dir, MODEL_IDS.split("/")[-1])
+    local_dir = os.path.join(cache_dir, model_id.split("/")[-1])
     try:
         snapshot_download(
             repo_id=model_id,
