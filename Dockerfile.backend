@@ -15,6 +15,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # model cache directory
 RUN mkdir -p /app/huggingface_cache
 
+# set cache directory for transformers
+ENV HF_HOME=/app/huggingface_cache
+ENV HF_HUB_CACHE=/app/huggingface_cache
+
 # copy project files
 COPY brewing/ .
 
@@ -27,8 +31,6 @@ RUN python download_model.py
 ENV TRANSFORMERS_OFFLINE=1
 ENV HF_HUB_OFFLINE=1
 
-# set cache directory for transformers
-ENV HF_HOME=/app/huggingface_cache
 
 # expose port 8080 for the server
 EXPOSE 8080
