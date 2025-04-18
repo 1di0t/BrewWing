@@ -10,14 +10,13 @@ MODEL_IDS = [
 
 # directory to cache the models
 cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
-os.makedirs(cache_dir, exist_ok=True)
+
 
 def download_model(model_id):
-    fname = model_id.split("/")[-1]
     try:
         snapshot_download(
             repo_id=model_id,
-            cache_dir=cache_dir+"/" + fname,
+            cache_dir=None,
             local_dir_use_symlinks=False,
             local_files_only=False,
         )
