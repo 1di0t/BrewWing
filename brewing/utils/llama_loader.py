@@ -19,15 +19,13 @@ def load_llama_llm(model_name_or_path="meta-llama/Llama-2-7b-hf", token=None):
     cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 
     tokenizer = AutoTokenizer.from_pretrained(
-        model_name_or_path, 
-        token=token,
-        cache_dir=cache_dir, 
+        cache_dir+"/"+model_name_or_path, 
+        token=token, 
         local_files_only=True
         )
     model = AutoModelForCausalLM.from_pretrained(
-        model_name_or_path,
+        cache_dir+"/"+model_name_or_path,
         token=token,
-        cache_dir=cache_dir, 
         local_files_only=True,
         torch_dtype="auto",       
         device_map="auto",        

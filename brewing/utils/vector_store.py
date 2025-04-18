@@ -12,9 +12,8 @@ def create_vector_store_from_coffee_df(coffee_df: pd.DataFrame):
     """
 
     embedding_model = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_name=cache_dir+"/"+"all-MiniLM-L6-v2",
         model_kwargs={
-            "cache_dir":cache_dir, 
             "local_files_only":True,
             "use_auth_token": hugginhgface_token,
             },

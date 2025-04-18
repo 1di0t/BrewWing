@@ -13,20 +13,14 @@ cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 os.makedirs(cache_dir, exist_ok=True)
 
 def download_model(model_id):
+    fname = model_id.split("/")[-1]
     try:
         snapshot_download(
             repo_id=model_id,
-            cache_dir=cache_dir,
+            cache_dir=cache_dir+"/" + fname,
             local_dir_use_symlinks=False,
             local_files_only=False,
         )
-
-        # tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)
-        # tokenizer.save_pretrained("app/models/" + model_id.split("/")[-1])
-
-        
-        # model = AutoModel.from_pretrained(model_id, cache_dir=cache_dir)
-        # model.save_pretrained("app/models/" + model_id.split("/")[-1])
 
 
     except Exception as e:
