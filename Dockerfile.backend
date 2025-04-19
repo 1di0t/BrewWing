@@ -27,16 +27,22 @@ COPY download_model.py .
 #  run the download_model.py script to download the model files
 RUN python download_model.py
 
+# copy the faiss index and build_faiss.py script
+COPY build_faiss.py .
+COPY brewing/data data/   
+
+# run the build_faiss.py script to build the faiss index
+RUN python build_faiss.py
+
 # set offline mode for transformers and HF Hub
 ENV TRANSFORMERS_OFFLINE=1
 ENV HF_HUB_OFFLINE=1
-
 
 # expose port 8080 for the server
 EXPOSE 8080
 
 # start the server using gunicorn
-CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 600 --capture-output --log-level debug"]
+CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 1200 --capture-output --log-level debug"]
 
 
 
