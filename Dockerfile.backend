@@ -20,7 +20,7 @@ ENV HF_HOME=/app/huggingface_cache
 ENV HF_HUB_CACHE=/app/huggingface_cache
 
 # copy project files
-COPY brewing/ brewing/ 
+COPY . .
 
 COPY download_model.py .
 
