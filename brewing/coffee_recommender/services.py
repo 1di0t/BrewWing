@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from django.conf import settings
 
 from utils.data_processing import load_and_preprocess_coffee_data
-from utils.vector_store import create_vector_store_from_coffee_df
+from utils.vector_store import load_faiss_vector_store
 from utils.llama_loader import load_llama_llm
 from utils.coffee_chain import create_coffee_retrieval_qa_chain
 from utils.text import extract_origin_text, translate_with_linebreaks
@@ -32,7 +32,7 @@ def initialize_coffee_chain():
     coffee_df = load_and_preprocess_coffee_data(DATA_FILE_PATH)
 
     # 벡터 스토어 생성
-    vectorstore = create_vector_store_from_coffee_df(coffee_df)
+    vectorstore = load_faiss_vector_store()
 
     # LLM 로드 (Hugging Face 모델)
     llm = load_llama_llm(cache_dir+"/Llama-3.2-1B", token=huggingface_token)
