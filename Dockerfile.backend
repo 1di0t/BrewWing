@@ -4,7 +4,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # set environment variables
-ENV DJANGO_SETTINGS_MODULE=brewing.settings
+ENV DJANGO_SETTINGS_MODULE=brewing.brewing.settings
 ENV PORT=8080
 ENV PYTHONTRACEMALLOC=10
 
