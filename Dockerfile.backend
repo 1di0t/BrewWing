@@ -22,7 +22,7 @@ ENV HF_HUB_CACHE=/app/huggingface_cache
 # copy project files
 COPY . .
 
-WORKDIR /app/brewing
+
 
 COPY download_model.py .
 
@@ -35,6 +35,8 @@ COPY brewing/data data/
 
 # run the build_faiss.py script to build the faiss index
 RUN python build_faiss.py
+
+WORKDIR /app/brewing
 
 # set offline mode for transformers and HF Hub
 ENV TRANSFORMERS_OFFLINE=1
