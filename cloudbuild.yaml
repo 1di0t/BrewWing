@@ -6,18 +6,18 @@ options:
 availableSecrets:
   secretManager:
     - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
-      env: "HUGGINGFACE_API_KEY"
+      env: "brew-wing-secret"
 
 steps:
   
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
-    secretEnv: ['HUGGINGFACE_API_KEY']     
+    secretEnv: ['brew-wing-secret']     
     args:
       - 'build'
       - '--build-arg'
-      - 'HUGGINGFACE_API_KEY=$$HUGGINGFACE_API_KEY'
+      - 'brew-wing-secret=$$brew-wing-secret'
       - '--tag'
       - 'gcr.io/$PROJECT_ID/brewwing-backend:latest'
       - '--file'
