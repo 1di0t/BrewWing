@@ -10,7 +10,6 @@ MODEL_IDS = [
 
 # directory to cache the models
 cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
-hf_key = os.getenv("HUGGINGFACE_API_KEY")
 
 
 # check token existence
@@ -24,7 +23,6 @@ def download_model(model_id):
         local_dir=local_dir,
         local_dir_use_symlinks=False,
         local_files_only=False,
-        token=hf_key,
     )
 
 if __name__ == "__main__":
