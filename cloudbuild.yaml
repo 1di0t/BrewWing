@@ -14,7 +14,6 @@ steps:
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: ['HUGGINGFACE_API_KEY']     
-    entrypoint: 'bash'
     args:
       - 'build'
       - '--build-arg'
