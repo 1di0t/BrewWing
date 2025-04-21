@@ -3,21 +3,33 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+availableSecrets:
+  secretManager:
+    - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
+      env: "BREW_WING_SECRET"
+
 steps:
   
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: "bash"
+    secretEnv: ["BREW_WING_SECRET"]
     args:
-      [
-        'build',
-        # tag the image
-        '-t', 'gcr.io/brewwing/brewwing-backend:latest',
-        # dockerfile path
-        '-f', 'Dockerfile.backend',
-        '.'
-      ]
-    secretEnv: ['BREW_WING_SECRET']
+      - "-c"
+      - |
+        set -e
+
+        export DOCKER_BUILDKIT=1
+
+        echo -n "$BREW_WING_SECRET" > /workspace/brew_wing_secret
+
+        # (c) 빌드할 때 --secret 으로 마운트
+        docker build \
+          --secret id=brew_wing_secret,src=/workspace/brew_wing_secret \
+          -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
+          -f Dockerfile.backend \
+          .
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -68,9 +80,6 @@ steps:
 
 
 
-availableSecrets:
-  secretManager:
-    - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
-      env: "BREW_WING_SECRET"
+
 
 timeout: 2400s 
