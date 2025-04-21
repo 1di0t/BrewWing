@@ -14,14 +14,15 @@ steps:
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: ['HUGGINGFACE_API_KEY']     
+    entrypoint: 'bash'
     args:
-      [
-        'build',
-        '-t', 'gcr.io/$PROJECT_ID/brewwing-backend:latest',
-        '-f', 'Dockerfile.backend',
-        '--build-arg', 'HUGGINGFACE_API_KEY=$HUGGINGFACE_API_KEY',
-        '.'
-      ]
+      - '-c'
+      - |
+        docker build \
+          --build-arg HUGGINGFACE_API_KEY="$HUGGINGFACE_API_KEY" \
+          -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
+          -f Dockerfile.backend \
+          .
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
