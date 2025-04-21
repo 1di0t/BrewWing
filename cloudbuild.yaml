@@ -6,24 +6,22 @@ options:
 availableSecrets:
   secretManager:
     - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
-      env: "HUGGINGFACE_TOKEN"
+      env: "HUGGINGFACE_API_KEY"
 
 steps:
   
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: "bash"
-    secretEnv: ["HUGGINGFACE_TOKEN"]
+    secretEnv: ['HUGGINGFACE_API_KEY']     
     args:
-      - "-c"
-      - |
-        export DOCKER_BUILDKIT=1
-        docker build \
-          --secret id=hf_key,src=/workspace/hf_key \
-          -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
-          -f Dockerfile.backend \
-        .
+      [
+        'build',
+        '-t', 'gcr.io/$PROJECT_ID/brewwing-backend:latest',
+        '-f', 'Dockerfile.backend',
+        '--build-arg', 'HUGGINGFACE_API_KEY=$HUGGINGFACE_API_KEY',
+        '.'
+      ]
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
