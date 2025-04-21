@@ -36,6 +36,9 @@ COPY brewing/data data/
 # run the build_faiss.py script to build the faiss index
 RUN python build_faiss.py
 
+# move the faiss index
+RUN mv faiss_store /app/brewing/faiss_store
+
 WORKDIR /app/brewing
 
 # set offline mode for transformers and HF Hub
