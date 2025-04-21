@@ -5,10 +5,10 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # set environment variables
-ARG brew-wing-secret
-ENV HUGGINGFACE_API_KEY=${brew-wing-secret} \
-    HUGGINGFACE_HUB_TOKEN=${brew-wing-secret} \
-    HF_HUB_TOKEN=${brew-wing-secret}
+ARG BREW_WING_SECRET
+ENV HUGGINGFACE_API_KEY=${BREW_WING_SECRET} \
+    HUGGINGFACE_HUB_TOKEN=${BREW_WING_SECRET} \
+    HF_HUB_TOKEN=${BREW_WING_SECRET}
 ENV DJANGO_SETTINGS_MODULE=brewing.settings
 ENV PORT=8080
 ENV PYTHONTRACEMALLOC=10

@@ -6,18 +6,18 @@ options:
 availableSecrets:
   secretManager:
     - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
-      env: "brew-wing-secret"
+      env: "BREW_WING_SECRET"
 
 steps:
   
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
-    secretEnv: ['brew-wing-secret']     
+    secretEnv: ['BREW_WING_SECRET']     
     args:
       - 'build'
       - '--build-arg'
-      - 'brew-wing-secret=$$brew-wing-secret'
+      - 'BREW_WING_SECRET=$$BREW_WING_SECRET'
       - '--tag'
       - 'gcr.io/$PROJECT_ID/brewwing-backend:latest'
       - '--file'
