@@ -18,18 +18,12 @@ steps:
     args:
       - "-c"
       - |
-        set -e
-
         export DOCKER_BUILDKIT=1
-
-        echo -n "$BREW_WING_SECRET" > /workspace/brew_wing_secret
-
-        # (c) 빌드할 때 --secret 으로 마운트
         docker build \
-          --secret id=brew_wing_secret,src=/workspace/brew_wing_secret \
-          -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
-          -f Dockerfile.backend \
-          .
+        --secret id=brew_wing_secret,src=<(echo "$BREW_WING_SECRET") \
+        -t gcr.io/brewwing/brewwing-backend:latest \
+        -f Dockerfile.backend \
+        .
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
