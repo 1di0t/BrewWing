@@ -17,7 +17,7 @@ steps:
     args:
       - 'build'
       - '--build-arg'
-      - 'BREW_WING_SECRET=$BREW_WING_SECRET'
+      - 'BREW_WING_SECRET=$$BREW_WING_SECRET'
       - '-t'
       - 'gcr.io/$PROJECT_ID/brewwing-backend:latest'
       - '-f'
