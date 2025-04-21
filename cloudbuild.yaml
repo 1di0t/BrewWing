@@ -6,7 +6,7 @@ options:
 availableSecrets:
   secretManager:
     - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
-      env: "BREW_WING_SECRET"
+      env: "HUGGINGFACE_TOKEN"
 
 steps:
   
@@ -14,15 +14,15 @@ steps:
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: "bash"
-    secretEnv: ["BREW_WING_SECRET"]
+    secretEnv: ["HUGGINGFACE_TOKEN"]
     args:
       - "-c"
       - |
         export DOCKER_BUILDKIT=1
         docker build \
-        --secret id=brew_wing_secret,src=<(echo "$BREW_WING_SECRET") \
-        -t gcr.io/brewwing/brewwing-backend:latest \
-        -f Dockerfile.backend \
+          --secret id=hf_key,src=/workspace/hf_key \
+          -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
+          -f Dockerfile.backend \
         .
 
   - name: 'gcr.io/cloud-builders/docker'
