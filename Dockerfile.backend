@@ -30,6 +30,8 @@ COPY . .
 # check if HUGGINGFACE_API_KEY is set
 RUN test -n "$HUGGINGFACE_API_KEY"
 
+RUN echo "HF Key: ${HUGGINGFACE_API_KEY:0:6}…"
+
 #  run the download_model.py script to download the model files
 RUN python download_model.py
 

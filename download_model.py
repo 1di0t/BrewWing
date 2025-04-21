@@ -28,7 +28,7 @@ def download_model(model_id):
         local_dir=local_dir,
         local_dir_use_symlinks=False,
         local_files_only=False,
-        token=hf_key,   
+        use_auth_token=hf_key,   
     )
 
 if __name__ == "__main__":
