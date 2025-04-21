@@ -10,7 +10,7 @@ MODEL_IDS = [
 
 # directory to cache the models
 cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
-
+hf_key = os.getenv("HUGGINGFACE_API_KEY")
 
 # check token existence
 if not hf_key:
