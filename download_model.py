@@ -10,21 +10,18 @@ MODEL_IDS = [
 
 # directory to cache the models
 cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
+hf_key = os.getenv("HUGGINGFACE_API_KEY")
 
 
 def download_model(model_id):
     local_dir = os.path.join(cache_dir, model_id.split("/")[-1])
-    try:
-        snapshot_download(
-            repo_id=model_id,
-            local_dir=local_dir,
-            local_dir_use_symlinks=False,
-            local_files_only=False,
-        )
-
-
-    except Exception as e:
-        print(f"Error downloading {model_id}: {e}")
+    snapshot_download(
+        repo_id=model_id,
+        local_dir=local_dir,
+        local_dir_use_symlinks=False,
+        local_files_only=False,
+        use_auth_token=hf_key,
+    )
 
 if __name__ == "__main__":
     for model_id in MODEL_IDS:
