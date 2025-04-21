@@ -15,13 +15,14 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: ['BREW_WING_SECRET']     
     args:
-      - '-c'
-      - |
-        docker build \
-          --build-arg BREW_WING_SECRET="${BREW_WING_SECRET}" \
-          -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
-          -f Dockerfile.backend \
-          .
+      - 'build'
+      - '--secret'
+      - 'id=hf_token,src=/workspace/hf_key'   
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/brewwing-backend:latest'
+      - '-f'
+      - 'Dockerfile.backend'
+      - '.'
   - name: 'gcr.io/cloud-builders/docker'
     args:
       [
