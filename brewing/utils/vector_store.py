@@ -21,4 +21,8 @@ def load_faiss_vector_store():
    
     
     # FAISS vector store
-    return FAISS.load_local("faiss_store", embedding_model)
+    return FAISS.load_local(
+        "faiss_store",
+        embedding_model,
+        allow_dangerous_deserialization=True
+        )
