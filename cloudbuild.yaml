@@ -18,9 +18,8 @@ steps:
     args:
       - "-c"
       - |
-        echo "Building backend image with Hugging Face token…"
         docker build \
-          --build-arg HUGWING_SECRET="$$BREW_WING_SECRET" \
+          --build-arg BREW_WING_SECRET="$BREW_WING_SECRET" \
           -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
           -f Dockerfile.backend \
           .
