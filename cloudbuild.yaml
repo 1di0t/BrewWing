@@ -13,10 +13,10 @@ steps:
       - "gcr.io/$PROJECT_ID/brewwing-backend:latest"
       - "-f"
       - "Dockerfile.backend"
+      - "--build-arg"
+      - "BREW_WING_SECRET=${_SECRET}"
       - "--no-cache"
       - "."
-    env:
-      - 'BREW_WING_SECRET=${_SECRET}'
   - name: 'gcr.io/cloud-builders/docker'
     args:
       [
