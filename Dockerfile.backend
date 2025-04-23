@@ -23,6 +23,9 @@ RUN echo "Verifying build arguments..." && \
         if ! echo "$HF_API_KEY" | grep -q "^hf_"; then \
             echo "HF_API_KEY must start with 'hf_'" && exit 1; \
         fi; \
+        if [ ${#HF_API_KEY} -lt 40 ]; then \
+            echo "HF_API_KEY length must be at least 40 characters" && exit 1; \
+        fi; \
     fi && \
     if [ -z "$DJANGO_SECRET_KEY" ]; then \
         echo "DJANGO_SECRET_KEY is not set" && exit 1; \
