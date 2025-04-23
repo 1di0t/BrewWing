@@ -22,7 +22,7 @@ RUN echo "HF_API_KEY exists: $(if [ -n "$HF_API_KEY" ]; then echo "yes"; else ec
 # Test direct API connectivity
 RUN if [ -n "$HF_API_KEY" ]; then \
     echo "Testing API connection directly..." && \
-    curl -s -o /dev/null -w "HF API connect status: %{http_code}\n" https://huggingface.co/api/whoami-v2 -H "Authorization: Bearer $HF_API_KEY"; \
+    curl -v https://huggingface.co/api/whoami-v2 -H "Authorization: Bearer $HF_API_KEY"; \
     fi
 
 # Set environment variables - use proper quoting
