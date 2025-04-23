@@ -1,6 +1,12 @@
 import os
 import sys
 from huggingface_hub import snapshot_download, HfApi
+from transformers import AutoTokenizer, AutoModel
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # list of model IDs to download
 MODEL_IDS = [
@@ -9,34 +15,23 @@ MODEL_IDS = [
     "sentence-transformers/all-MiniLM-L6-v2",
 ]
 
-def verify_token():
-    hf_key = (
-        os.getenv("HUGGINGFACE_API_KEY")
-        or os.getenv("HUGGINGFACE_HUB_TOKEN")
-        or os.getenv("HF_HUB_TOKEN")
-    )
+def verify_token(token):
+    """Verify the Hugging Face token."""
+    logger.debug(f"Verifying token...")
+    logger.debug(f"Token length: {len(token)}")
+    logger.debug(f"Token starts with: {token[:4]}")
     
-    print(f"Debug: Token length: {len(hf_key) if hf_key else 0}")
-    print(f"Debug: Token starts with: {hf_key[:4] if hf_key else None}")
-    print(f"Debug: All environment variables:")
-    for key in ["HUGGINGFACE_API_KEY", "HUGGINGFACE_HUB_TOKEN", "HF_HUB_TOKEN"]:
-        value = os.getenv(key)
-        print(f"Debug: {key}: {'Set' if value else 'Not set'}")
+    # Check if token starts with 'hf_'
+    if not token.startswith('hf_'):
+        logger.error("Token must start with 'hf_'")
+        return False
     
-    if not hf_key:
-        print("Error: Hugging Face API token not found in environment variables")
-        sys.exit(1)
+    # Check token length (should be at least 40 characters)
+    if len(token) < 40:
+        logger.error(f"Token length ({len(token)}) is too short")
+        return False
     
-    try:
-        api = HfApi(token=hf_key)
-        print("Debug: Created HfApi instance with token")
-        whoami = api.whoami()
-        print(f"Debug: Successfully authenticated as: {whoami}")
-        return hf_key
-    except Exception as e:
-        print(f"Error verifying token: {str(e)}")
-        print(f"Debug: Token validation failed with error: {type(e).__name__}")
-        sys.exit(1)
+    return True
 
 def download_model(model_id, token):
     print(f"Downloading model: {model_id}")
@@ -56,11 +51,52 @@ def download_model(model_id, token):
         print(f"Error downloading model {model_id}: {str(e)}", file=sys.stderr)
         sys.exit(1)
 
+def main():
+    logger.info("Starting model download process...")
+    
+    # Get token from environment variables
+    token = os.getenv('HUGGINGFACE_API_KEY') or os.getenv('HUGGINGFACE_HUB_TOKEN') or os.getenv('HF_HUB_TOKEN')
+    
+    # Debug information
+    logger.debug(f"Token length: {len(token) if token else 0}")
+    logger.debug(f"Token starts with: {token[:4] if token else 'None'}")
+    
+    # Print all environment variables
+    logger.debug("All environment variables:")
+    for var in ['HUGGINGFACE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'HF_HUB_TOKEN']:
+        logger.debug(f"{var}: {'Set' if os.getenv(var) else 'Not set'}")
+    
+    if not token:
+        logger.error("No Hugging Face token found in environment variables")
+        sys.exit(1)
+    
+    # Verify token
+    if not verify_token(token):
+        logger.error("Token validation failed")
+        sys.exit(1)
+    
+    try:
+        # Create HfApi instance
+        logger.debug("Creating HfApi instance with token")
+        api = HfApi(token=token)
+        
+        # Verify token with API call
+        logger.debug("Verifying token with API call")
+        api.whoami()
+        logger.info("Token verified successfully")
+        
+        # Download model
+        logger.info("Downloading model...")
+        snapshot_download(
+            repo_id="sentence-transformers/all-MiniLM-L6-v2",
+            cache_dir="/app/huggingface_cache",
+            token=token
+        )
+        logger.info("Model downloaded successfully")
+        
+    except Exception as e:
+        logger.error(f"Error during model download: {str(e)}")
+        sys.exit(1)
+
 if __name__ == "__main__":
-    print("Starting model download process...")
-    token = verify_token()
-    
-    for model_id in MODEL_IDS:
-        download_model(model_id, token)
-    
-    print("All models downloaded successfully")
+    main()

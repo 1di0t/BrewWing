@@ -30,7 +30,7 @@ RUN echo "Verifying build arguments..." && \
         echo "DJANGO_SECRET_KEY is set"; \
     fi
 
-# Set environment variables
+# Set environment variables with quotes to preserve values
 ENV HUGGINGFACE_API_KEY="$HF_API_KEY" \
     HUGGINGFACE_HUB_TOKEN="$HF_API_KEY" \
     HF_HUB_TOKEN="$HF_API_KEY" \
@@ -72,12 +72,6 @@ RUN mv faiss_store /app/brewing/faiss_store
 
 WORKDIR /app/brewing
 
-# expose port 8080 for the server
-EXPOSE 8080
-
-# start the server using gunicorn
-CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 1200 --capture-output --log-level debug"]
-
 # Verify environment variables are set correctly
 RUN echo "Verifying environment variables..." && \
     if [ "$HUGGINGFACE_API_KEY" != "$HF_API_KEY" ]; then \
@@ -89,6 +83,12 @@ RUN echo "Verifying environment variables..." && \
     if [ "$HF_HUB_TOKEN" != "$HF_API_KEY" ]; then \
         echo "HF_HUB_TOKEN not set correctly" && exit 1; \
     fi
+
+# expose port 8080 for the server
+EXPOSE 8080
+
+# start the server using gunicorn
+CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 1200 --capture-output --log-level debug"]
 
 
 
