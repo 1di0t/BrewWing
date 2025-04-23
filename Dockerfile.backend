@@ -9,18 +9,32 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Accept build argument
-ARG BREW_WING_SECRET
-RUN if [ -z "$BREW_WING_SECRET" ]; then echo "BREW_WING_SECRET is not set" && exit 1; fi
+# Accept build arguments
+ARG HF_API_KEY
+ARG DJANGO_SECRET_KEY
+
+# Verify build arguments
+RUN echo "Verifying build arguments..." && \
+    if [ -z "$HF_API_KEY" ]; then \
+        echo "HF_API_KEY is not set" && exit 1; \
+    else \
+        echo "HF_API_KEY is set with length: ${#HF_API_KEY}"; \
+    fi && \
+    if [ -z "$DJANGO_SECRET_KEY" ]; then \
+        echo "DJANGO_SECRET_KEY is not set" && exit 1; \
+    else \
+        echo "DJANGO_SECRET_KEY is set with length: ${#DJANGO_SECRET_KEY}"; \
+    fi
 
 # set environment variables
-ENV HUGGINGFACE_API_KEY="${BREW_WING_SECRET}" \
-    HUGGINGFACE_HUB_TOKEN="${BREW_WING_SECRET}" \
-    HF_HUB_TOKEN="${BREW_WING_SECRET}" \
+ENV HUGGINGFACE_API_KEY="${HF_API_KEY}" \
+    HUGGINGFACE_HUB_TOKEN="${HF_API_KEY}" \
+    HF_HUB_TOKEN="${HF_API_KEY}" \
     TRANSFORMERS_CACHE=/app/huggingface_cache \
     HF_HOME=/app/huggingface_cache \
     HF_HUB_CACHE=/app/huggingface_cache \
-    SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache
+    SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache \
+    DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY}"
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
     PORT=8080 \
@@ -35,13 +49,6 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install --no-cache-dir sentence-transformers
-
-# Verify the environment and API key
-RUN echo "Verifying HF API Key..." && \
-    echo "Key value: $HUGGINGFACE_API_KEY" && \
-    if [ "$HUGGINGFACE_API_KEY" = "$BREW_WING_SECRET" ]; then \
-        echo "Error: API key not properly set" && exit 1; \
-    fi
 
 # copy project files
 COPY . .
