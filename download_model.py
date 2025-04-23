@@ -23,8 +23,8 @@ def verify_token():
 
     # Verify token
     try:
-        api = HfApi()
-        user_info = api.whoami(token=hf_key)
+        api = HfApi(token=hf_key)
+        user_info = api.whoami()
         print(f"Authenticated as: {user_info}")
         return hf_key
     except Exception as e:
