@@ -18,7 +18,7 @@ RUN echo "Verifying build arguments..." && \
     if [ -z "$HF_API_KEY" ]; then \
         echo "HF_API_KEY is not set" && exit 1; \
     else \
-        echo "HF_API_KEY is set and starts with: ${HF_API_KEY:0:4}..."; \
+        echo "HF_API_KEY is set"; \
     fi && \
     if [ -z "$DJANGO_SECRET_KEY" ]; then \
         echo "DJANGO_SECRET_KEY is not set" && exit 1; \
@@ -38,10 +38,10 @@ ENV HUGGINGFACE_API_KEY=$HF_API_KEY \
 
 # Verify environment variables
 RUN echo "Verifying Hugging Face environment variables..." && \
-    echo "HUGGINGFACE_API_KEY starts with: ${HUGGINGFACE_API_KEY:0:4}..." && \
-    echo "HF_HOME: $HF_HOME" && \
-    if [ "$HUGGINGFACE_API_KEY" != "$HF_API_KEY" ]; then \
+    if [ -z "$HUGGINGFACE_API_KEY" ]; then \
         echo "Error: HUGGINGFACE_API_KEY not set correctly" && exit 1; \
+    else \
+        echo "HUGGINGFACE_API_KEY is set"; \
     fi
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
