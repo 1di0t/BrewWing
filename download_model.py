@@ -1,29 +1,47 @@
 import os
 import sys
-from huggingface_hub import snapshot_download, HfApi
-from transformers import AutoTokenizer, AutoModel
+import re
 import logging
+from huggingface_hub import HfApi, snapshot_download
+from transformers import AutoTokenizer, AutoModel
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# list of model IDs to download
-MODEL_IDS = [
-    "meta-llama/Llama-3.2-1B",
-    "facebook/nllb-200-distilled-600M",
-    "sentence-transformers/all-MiniLM-L6-v2",
-]
+def clean_token(token):
+    """Clean token from any potential Cloud Build formatting issues."""
+    if not token:
+        return None
+    
+    # If token starts with $ or $$, it's likely a variable name instead of the actual token
+    if token.startswith('$'):
+        logger.warning(f"Token appears to be a variable name: {token}")
+        # Try to get the actual token from environment
+        actual_token = os.getenv(token.lstrip('$'))
+        if actual_token:
+            logger.info(f"Successfully extracted token from environment variable")
+            return actual_token
+    
+    # If token doesn't start with hf_, it's likely invalid
+    if not token.startswith('hf_'):
+        logger.warning(f"Token doesn't start with 'hf_', got: {token[:4]}")
+    
+    return token
 
 def verify_token(token):
     """Verify the Hugging Face token."""
+    if not token:
+        logger.error("Token is None or empty")
+        return False
+        
     logger.debug(f"Verifying token...")
     logger.debug(f"Token length: {len(token)}")
     logger.debug(f"Token starts with: {token[:4]}")
     
     # Check if token starts with 'hf_'
     if not token.startswith('hf_'):
-        logger.error("Token must start with 'hf_'")
+        logger.error(f"Token must start with 'hf_', got: {token[:4]}")
         return False
     
     # Check token length (should be at least 40 characters)
@@ -33,37 +51,28 @@ def verify_token(token):
     
     return True
 
-def download_model(model_id, token):
-    print(f"Downloading model: {model_id}")
-    try:
-        cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
-        local_dir = os.path.join(cache_dir, model_id.split("/")[-1])
-        
-        snapshot_download(
-            repo_id=model_id,
-            local_dir=local_dir,
-            local_dir_use_symlinks=False,
-            local_files_only=False,
-            use_auth_token=token,
-        )
-        print(f"Successfully downloaded model: {model_id}")
-    except Exception as e:
-        print(f"Error downloading model {model_id}: {str(e)}", file=sys.stderr)
-        sys.exit(1)
-
 def main():
     logger.info("Starting model download process...")
     
     # Get token from environment variables
-    token = os.getenv('HUGGINGFACE_API_KEY') or os.getenv('HUGGINGFACE_HUB_TOKEN') or os.getenv('HF_HUB_TOKEN')
+    for env_var in ['HUGGINGFACE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'HF_HUB_TOKEN', 'HF_API_KEY']:
+        token = os.getenv(env_var)
+        if token:
+            logger.info(f"Found token in {env_var}")
+            break
     
     # Debug information
-    logger.debug(f"Token length: {len(token) if token else 0}")
-    logger.debug(f"Token starts with: {token[:4] if token else 'None'}")
+    logger.debug(f"Raw token length: {len(token) if token else 0}")
+    logger.debug(f"Raw token starts with: {token[:4] if token else 'None'}")
+    
+    # Clean the token
+    token = clean_token(token)
+    logger.debug(f"Cleaned token length: {len(token) if token else 0}")
+    logger.debug(f"Cleaned token starts with: {token[:4] if token else 'None'}")
     
     # Print all environment variables
     logger.debug("All environment variables:")
-    for var in ['HUGGINGFACE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'HF_HUB_TOKEN']:
+    for var in ['HUGGINGFACE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'HF_HUB_TOKEN', 'HF_API_KEY']:
         logger.debug(f"{var}: {'Set' if os.getenv(var) else 'Not set'}")
     
     if not token:
@@ -82,8 +91,12 @@ def main():
         
         # Verify token with API call
         logger.debug("Verifying token with API call")
-        api.whoami()
-        logger.info("Token verified successfully")
+        try:
+            whoami = api.whoami()
+            logger.info(f"Token verified successfully. Logged in as: {whoami}")
+        except Exception as e:
+            logger.error(f"Error during API verification: {str(e)}")
+            sys.exit(1)
         
         # Download model
         logger.info("Downloading model...")
