@@ -3,10 +3,16 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/brew-wing-secret/versions/latest
+      env: 'BREW_WING_SECRET'
+
 steps:
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
+    secretEnv: ['BREW_WING_SECRET']
     args:
       - "build"
       - "-t"
@@ -14,7 +20,7 @@ steps:
       - "-f"
       - "Dockerfile.backend"
       - "--build-arg"
-      - "BREW_WING_SECRET=${_SECRET}"
+      - "BREW_WING_SECRET=$$BREW_WING_SECRET"
       - "--no-cache"
       - "."
   - name: 'gcr.io/cloud-builders/docker'
