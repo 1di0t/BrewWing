@@ -13,16 +13,16 @@ steps:
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: ['BREW_WING_SECRET']
+    entrypoint: 'bash'
     args:
-      - "build"
-      - "-t"
-      - "gcr.io/$PROJECT_ID/brewwing-backend:latest"
-      - "-f"
-      - "Dockerfile.backend"
-      - "--build-arg"
-      - "BREW_WING_SECRET=$$BREW_WING_SECRET"
-      - "--no-cache"
-      - "."
+      - '-c'
+      - |
+        echo "Building with secret from: $$BREW_WING_SECRET"
+        docker build \
+          --build-arg BREW_WING_SECRET="$$BREW_WING_SECRET" \
+          -t "gcr.io/$PROJECT_ID/brewwing-backend:latest" \
+          -f Dockerfile.backend \
+          --no-cache .
   - name: 'gcr.io/cloud-builders/docker'
     args:
       [

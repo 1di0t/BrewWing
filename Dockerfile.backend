@@ -11,12 +11,12 @@ RUN apt-get update && apt-get install -y \
 
 # Accept build argument
 ARG BREW_WING_SECRET
-RUN test -n "$BREW_WING_SECRET"
+RUN if [ -z "$BREW_WING_SECRET" ]; then echo "BREW_WING_SECRET is not set" && exit 1; fi
 
 # set environment variables
-ENV HUGGINGFACE_API_KEY=$BREW_WING_SECRET \
-    HUGGINGFACE_HUB_TOKEN=$BREW_WING_SECRET \
-    HF_HUB_TOKEN=$BREW_WING_SECRET \
+ENV HUGGINGFACE_API_KEY="${BREW_WING_SECRET}" \
+    HUGGINGFACE_HUB_TOKEN="${BREW_WING_SECRET}" \
+    HF_HUB_TOKEN="${BREW_WING_SECRET}" \
     TRANSFORMERS_CACHE=/app/huggingface_cache \
     HF_HOME=/app/huggingface_cache \
     HF_HUB_CACHE=/app/huggingface_cache \
@@ -36,16 +36,15 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install --no-cache-dir sentence-transformers
 
-# Verify the environment
-RUN python -c "from sentence_transformers import SentenceTransformer; print('Downloading model...'); model = SentenceTransformer('all-MiniLM-L6-v2'); print('Model downloaded successfully')"
+# Verify the environment and API key
+RUN echo "Verifying HF API Key..." && \
+    echo "Key value: $HUGGINGFACE_API_KEY" && \
+    if [ "$HUGGINGFACE_API_KEY" = "$BREW_WING_SECRET" ]; then \
+        echo "Error: API key not properly set" && exit 1; \
+    fi
 
-
+# copy project files
 COPY . .
-
-
-# check if HUGGINGFACE_API_KEY is set
-RUN test -n "$HUGGINGFACE_API_KEY"
-RUN echo "HF Key: ${HUGGINGFACE_API_KEY}"
 
 # run the download_model.py script to download the model files
 RUN python download_model.py
@@ -61,10 +60,6 @@ RUN python build_faiss.py
 RUN mv faiss_store /app/brewing/faiss_store
 
 WORKDIR /app/brewing
-
-# set offline mode for transformers and HF Hub
-ENV TRANSFORMERS_OFFLINE=1
-ENV HF_HUB_OFFLINE=1
 
 # expose port 8080 for the server
 EXPOSE 8080
