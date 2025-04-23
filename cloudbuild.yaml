@@ -3,10 +3,7 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
-# Add a substitution variable to access the secret directly
-substitutions:
-  _HF_API_KEY: 'hf_dummy_token_for_testing_purposes_only_replace_in_production'
-  _DJANGO_SECRET_KEY: 'django_dummy_secret_key_for_testing_purposes_only'
+
 
 # Access secrets directly
 availableSecrets:
@@ -29,9 +26,9 @@ steps:
       - "-f"
       - "Dockerfile.backend"
       - "--build-arg"
-      - "HF_API_KEY=${_HF_API_KEY}"
+      - "HF_API_KEY=${HF_API_KEY}"
       - "--build-arg"
-      - "DJANGO_SECRET_KEY=${_DJANGO_SECRET_KEY}"
+      - "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}"
       - "--no-cache"
       - "."
   - name: 'gcr.io/cloud-builders/docker'
