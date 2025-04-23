@@ -3,10 +3,13 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+substitutions:
+  _BREW_WING_SECRET: "" # This will be populated from secret
+
 availableSecrets:
   secretManager:
     - versionName: "projects/903635083978/secrets/brew-wing-secret/versions/latest"
-      env: "BREW_WING_SECRET"
+      env: "_BREW_WING_SECRET"
 
 steps:
   - name: 'python:3.10-slim'
@@ -24,11 +27,10 @@ steps:
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
-    secretEnv: ['BREW_WING_SECRET']
     args:
       - "build"
       - "--build-arg"
-      - "BREW_WING_SECRET=$$BREW_WING_SECRET"
+      - "BREW_WING_SECRET=${_BREW_WING_SECRET}"
       - "-t"
       - "gcr.io/$PROJECT_ID/brewwing-backend:latest"
       - "-f"
