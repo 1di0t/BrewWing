@@ -17,23 +17,15 @@ ENV DJANGO_SETTINGS_MODULE=brewing.settings \
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# model cache directory
-RUN mkdir -p /app/huggingface_cache
 
-# set cache directory for transformers
-ENV HF_HOME=/app/huggingface_cache
-ENV HF_HUB_CACHE=/app/huggingface_cache
+COPY ${CACHE_DIR} /app/huggingface_cache
+ENV HF_HOME=/app/huggingface_cache \
+    HF_HUB_CACHE=/app/huggingface_cache \
+    TRANSFORMERS_OFFLINE=1 \
+    HF_HUB_OFFLINE=1
 
-# copy project files
+
 COPY . .
-
-# check if HUGGINGFACE_API_KEY is set
-RUN test -n "$HUGGINGFACE_API_KEY"
-
-RUN echo "HF Key: ${HUGGINGFACE_API_KEY}"
-
-#  run the download_model.py script to download the model files
-RUN python download_model.py
 
 # copy the faiss index and build_faiss.py script
 COPY build_faiss.py .
