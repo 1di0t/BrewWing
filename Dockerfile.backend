@@ -18,23 +18,31 @@ RUN echo "Verifying build arguments..." && \
     if [ -z "$HF_API_KEY" ]; then \
         echo "HF_API_KEY is not set" && exit 1; \
     else \
-        echo "HF_API_KEY is set with length: ${#HF_API_KEY}"; \
+        echo "HF_API_KEY is set and starts with: ${HF_API_KEY:0:4}..."; \
     fi && \
     if [ -z "$DJANGO_SECRET_KEY" ]; then \
         echo "DJANGO_SECRET_KEY is not set" && exit 1; \
     else \
-        echo "DJANGO_SECRET_KEY is set with length: ${#DJANGO_SECRET_KEY}"; \
+        echo "DJANGO_SECRET_KEY is set"; \
     fi
 
 # set environment variables
-ENV HUGGINGFACE_API_KEY="${HF_API_KEY}" \
-    HUGGINGFACE_HUB_TOKEN="${HF_API_KEY}" \
-    HF_HUB_TOKEN="${HF_API_KEY}" \
-    TRANSFORMERS_CACHE=/app/huggingface_cache \
+ENV HUGGINGFACE_API_KEY=$HF_API_KEY \
+    HUGGINGFACE_HUB_TOKEN=$HF_API_KEY \
+    HF_HUB_TOKEN=$HF_API_KEY \
     HF_HOME=/app/huggingface_cache \
+    TRANSFORMERS_CACHE=/app/huggingface_cache \
     HF_HUB_CACHE=/app/huggingface_cache \
     SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache \
-    DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY}"
+    DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY
+
+# Verify environment variables
+RUN echo "Verifying Hugging Face environment variables..." && \
+    echo "HUGGINGFACE_API_KEY starts with: ${HUGGINGFACE_API_KEY:0:4}..." && \
+    echo "HF_HOME: $HF_HOME" && \
+    if [ "$HUGGINGFACE_API_KEY" != "$HF_API_KEY" ]; then \
+        echo "Error: HUGGINGFACE_API_KEY not set correctly" && exit 1; \
+    fi
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
     PORT=8080 \
@@ -49,6 +57,9 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install --no-cache-dir sentence-transformers
+
+# Test Hugging Face authentication
+RUN python -c "from huggingface_hub import HfApi; api = HfApi(); print('Testing HF API connection...'); api.whoami(); print('HF API connection successful')"
 
 # copy project files
 COPY . .
