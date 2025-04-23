@@ -4,35 +4,45 @@ FROM python:3.10-slim
 # set directory to /app
 WORKDIR /app
 
+# system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 # set environment variables
 ENV HUGGINGFACE_API_KEY=$BREW_WING_SECRET \
     HUGGINGFACE_HUB_TOKEN=$BREW_WING_SECRET \
-    HF_HUB_TOKEN=$BREW_WING_SECRET
+    HF_HUB_TOKEN=$BREW_WING_SECRET \
+    TRANSFORMERS_CACHE=/app/huggingface_cache \
+    HF_HOME=/app/huggingface_cache \
+    HF_HUB_CACHE=/app/huggingface_cache \
+    SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
     PORT=8080 \
     PYTHONTRACEMALLOC=10
 
-# system dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
 # model cache directory
-RUN mkdir -p /app/huggingface_cache
+RUN mkdir -p /app/huggingface_cache && \
+    chmod -R 777 /app/huggingface_cache
 
-# set cache directory for transformers
-ENV HF_HOME=/app/huggingface_cache
-ENV HF_HUB_CACHE=/app/huggingface_cache
+# Copy and install requirements first for better caching
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install --no-cache-dir sentence-transformers
+
+# Verify the environment
+RUN python -c "from sentence_transformers import SentenceTransformer; print('Downloading model...'); model = SentenceTransformer('all-MiniLM-L6-v2'); print('Model downloaded successfully')"
 
 # copy project files
 COPY . .
 
 # check if HUGGINGFACE_API_KEY is set
 RUN test -n "$HUGGINGFACE_API_KEY"
-
 RUN echo "HF Key: ${HUGGINGFACE_API_KEY}"
 
-#  run the download_model.py script to download the model files
+# run the download_model.py script to download the model files
 RUN python download_model.py
 
 # copy the faiss index and build_faiss.py script
