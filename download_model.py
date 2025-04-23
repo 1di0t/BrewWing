@@ -10,25 +10,32 @@ MODEL_IDS = [
 ]
 
 def verify_token():
-    # Get token from environment variables
     hf_key = (
         os.getenv("HUGGINGFACE_API_KEY")
         or os.getenv("HUGGINGFACE_HUB_TOKEN")
         or os.getenv("HF_HUB_TOKEN")
     )
-
+    
+    print(f"Debug: Token length: {len(hf_key) if hf_key else 0}")
+    print(f"Debug: Token starts with: {hf_key[:4] if hf_key else None}")
+    print(f"Debug: All environment variables:")
+    for key in ["HUGGINGFACE_API_KEY", "HUGGINGFACE_HUB_TOKEN", "HF_HUB_TOKEN"]:
+        value = os.getenv(key)
+        print(f"Debug: {key}: {'Set' if value else 'Not set'}")
+    
     if not hf_key:
-        print("Error: HUGGINGFACE_API_KEY environment variable is not set.", file=sys.stderr)
+        print("Error: Hugging Face API token not found in environment variables")
         sys.exit(1)
-
-    # Verify token
+    
     try:
         api = HfApi(token=hf_key)
-        user_info = api.whoami()
-        print(f"Authenticated as: {user_info}")
+        print("Debug: Created HfApi instance with token")
+        whoami = api.whoami()
+        print(f"Debug: Successfully authenticated as: {whoami}")
         return hf_key
     except Exception as e:
-        print(f"Error verifying token: {str(e)}", file=sys.stderr)
+        print(f"Error verifying token: {str(e)}")
+        print(f"Debug: Token validation failed with error: {type(e).__name__}")
         sys.exit(1)
 
 def download_model(model_id, token):
