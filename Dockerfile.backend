@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Accept build argument
+ARG BREW_WING_SECRET
+RUN test -n "$BREW_WING_SECRET"
+
 # set environment variables
 ENV HUGGINGFACE_API_KEY=$BREW_WING_SECRET \
     HUGGINGFACE_HUB_TOKEN=$BREW_WING_SECRET \
