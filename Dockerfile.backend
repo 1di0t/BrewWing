@@ -58,8 +58,8 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install --no-cache-dir sentence-transformers
 
-# Test Hugging Face authentication
-RUN python -c "from huggingface_hub import HfApi; api = HfApi(); print('Testing HF API connection...'); api.whoami(); print('HF API connection successful')"
+# Test Hugging Face authentication with explicit token
+RUN python -c "from huggingface_hub import HfApi; api = HfApi(token='$HUGGINGFACE_API_KEY'); print('Testing HF API connection...'); api.whoami(); print('HF API connection successful')"
 
 # copy project files
 COPY . .
