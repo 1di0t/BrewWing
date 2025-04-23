@@ -18,7 +18,8 @@ RUN echo "Verifying build arguments..." && \
     if [ -z "$HF_API_KEY" ]; then \
         echo "HF_API_KEY is not set" && exit 1; \
     else \
-        echo "HF_API_KEY is set"; \
+        echo "HF_API_KEY is set (length: ${#HF_API_KEY})"; \
+        echo "HF_API_KEY starts with: ${HF_API_KEY:0:4}"; \
     fi && \
     if [ -z "$DJANGO_SECRET_KEY" ]; then \
         echo "DJANGO_SECRET_KEY is not set" && exit 1; \
@@ -73,6 +74,12 @@ EXPOSE 8080
 
 # start the server using gunicorn
 CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 1200 --capture-output --log-level debug"]
+
+# Add debug step to verify environment variables
+RUN echo "Debug: Verifying environment variables..." && \
+    echo "HUGGINGFACE_API_KEY length: ${#HUGGINGFACE_API_KEY}" && \
+    echo "HUGGINGFACE_HUB_TOKEN length: ${#HUGGINGFACE_HUB_TOKEN}" && \
+    echo "HF_HUB_TOKEN length: ${#HF_HUB_TOKEN}"
 
 
 
