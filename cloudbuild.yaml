@@ -9,14 +9,26 @@ availableSecrets:
       env: "BREW_WING_SECRET"
 
 steps:
-  
+  - name: 'python:3.10-slim'
+    secretEnv: ['BREW_WING_SECRET']
+    workingDir: '/workspace'
+    env:
+      - 'HF_HOME=/workspace/huggingface_cache'
+      - 'HF_HUB_CACHE=/workspace/huggingface_cache'
+      - 'HUGGINGFACE_API_KEY=${BREW_WING_SECRET}'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir huggingface-hub
+        python download_model.py
   # backend build and push
   #=========================================================================
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: ['BREW_WING_SECRET']
     args:
       - "build"
-      - "--build-arg=BREW_WING_SECRET=$$BREW_WING_SECRET"
+      - "--build-arg=BREW_WING_SECRET=$BREW_WING_SECRET"
       - "-t"
       - "gcr.io/$PROJECT_ID/brewwing-backend:latest"
       - "-f"
