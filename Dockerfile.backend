@@ -14,18 +14,22 @@ RUN apt-get update && apt-get install -y \
 ARG HF_API_KEY
 ARG DJANGO_SECRET_KEY
 
-# Debug: Print token info without exposing it
+# Debug: Print token info without exposing the entire token
 RUN echo "HF_API_KEY exists: $(if [ -n "$HF_API_KEY" ]; then echo "yes"; else echo "no"; fi)" && \
     echo "HF_API_KEY length: ${#HF_API_KEY}" && \
-    if [ -n "$HF_API_KEY" ]; then echo "HF_API_KEY first 4 chars: $(echo $HF_API_KEY | cut -c1-4)"; fi
+    if [ -n "$HF_API_KEY" ]; then \
+        echo "HF_API_KEY first 4 chars: $(echo $HF_API_KEY | cut -c1-4)" && \
+        echo "HF_API_KEY first 10 chars: $(echo $HF_API_KEY | cut -c1-10)" && \
+        echo "HF_API_KEY last 4 chars: $(echo $HF_API_KEY | rev | cut -c1-4 | rev)"; \
+    fi
 
 # Test direct API connectivity
 RUN if [ -n "$HF_API_KEY" ]; then \
     echo "Testing API connection directly..." && \
-    curl -v https://huggingface.co/api/whoami-v2 -H "Authorization: Bearer $HF_API_KEY"; \
+    curl -v https://huggingface.co/api/whoami-v2 -H "Authorization: Bearer $HF_API_KEY" 2>&1 | grep -v "< Authorization:"; \
     fi
 
-# Set environment variables - use proper quoting
+# Set environment variables - preserve original token exactly as received
 ENV HUGGINGFACE_API_KEY="${HF_API_KEY}" \
     HUGGINGFACE_HUB_TOKEN="${HF_API_KEY}" \
     HF_HUB_TOKEN="${HF_API_KEY}" \
@@ -46,7 +50,11 @@ ENV DJANGO_SETTINGS_MODULE=brewing.settings \
 RUN echo "Verifying environment variables:" && \
     echo "HUGGINGFACE_API_KEY exists: $(if [ -n "$HUGGINGFACE_API_KEY" ]; then echo "yes"; else echo "no"; fi)" && \
     echo "HUGGINGFACE_API_KEY length: ${#HUGGINGFACE_API_KEY}" && \
-    if [ -n "$HUGGINGFACE_API_KEY" ]; then echo "HUGGINGFACE_API_KEY first 4 chars: $(echo $HUGGINGFACE_API_KEY | cut -c1-4)"; fi
+    if [ -n "$HUGGINGFACE_API_KEY" ]; then \
+        echo "HUGGINGFACE_API_KEY first 4 chars: $(echo $HUGGINGFACE_API_KEY | cut -c1-4)" && \
+        echo "HUGGINGFACE_API_KEY first 10 chars: $(echo $HUGGINGFACE_API_KEY | cut -c1-10)" && \
+        echo "HUGGINGFACE_API_KEY last 4 chars: $(echo $HUGGINGFACE_API_KEY | rev | cut -c1-4 | rev)"; \
+    fi
 
 # Model cache directory
 RUN mkdir -p /app/huggingface_cache && \
