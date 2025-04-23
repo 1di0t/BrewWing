@@ -1,7 +1,10 @@
 import os
 import sys
 import logging
+import json
+import requests
 from huggingface_hub import HfApi, snapshot_download
+from huggingface_hub.utils import HfHubHTTPError
 from transformers import AutoTokenizer, AutoModel
 
 # Set up logging
@@ -29,7 +32,31 @@ def clean_token(token):
             logger.info(f"Successfully extracted token from environment variable")
             return actual_token
     
+    # Remove any whitespace or newlines
+    token = token.strip()
+    
     return token
+
+def verify_token_direct(token):
+    """Directly verify the token with Hugging Face API using requests."""
+    try:
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.get("https://huggingface.co/api/whoami-v2", headers=headers)
+        
+        logger.debug(f"Direct API response status code: {response.status_code}")
+        logger.debug(f"Direct API response headers: {json.dumps(dict(response.headers))}")
+        
+        if response.status_code == 200:
+            logger.info("Token verified directly via API request")
+            return True
+        else:
+            logger.error(f"Token verification failed with status code {response.status_code}")
+            if response.text:
+                logger.error(f"Response text: {response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Error during direct token verification: {str(e)}")
+        return False
 
 def verify_token(token):
     """Verify the Hugging Face token."""
@@ -51,6 +78,15 @@ def verify_token(token):
         logger.error(f"Token length ({len(token)}) is too short")
         return False
     
+    # Try direct verification as a more reliable method
+    logger.debug("Attempting direct token verification...")
+    direct_verification = verify_token_direct(token)
+    
+    if direct_verification:
+        logger.info("Token verified successfully via direct API call")
+    else:
+        logger.warning("Token failed direct verification, trying with HfApi...")
+    
     return True
 
 def download_model(model_id, token):
@@ -61,21 +97,70 @@ def download_model(model_id, token):
         cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
         local_dir = os.path.join(cache_dir, model_id.split("/")[-1])
         
-        # Download the model
-        snapshot_download(
-            repo_id=model_id,
-            local_dir=local_dir,
-            local_dir_use_symlinks=False,
-            local_files_only=False,
-            token=token
-        )
-        logger.info(f"Successfully downloaded model: {model_id}")
+        # Try direct HTTP request first for public models
+        try:
+            logger.info(f"Trying HTTP download without token for {model_id}")
+            model_url = f"https://huggingface.co/api/models/{model_id}"
+            response = requests.get(model_url)
+            logger.debug(f"Model info status code: {response.status_code}")
+            
+            # If model is publicly accessible, try downloading without token
+            if response.status_code == 200:
+                logger.info(f"Model {model_id} appears to be publicly accessible")
+                
+                try:
+                    logger.info(f"Downloading {model_id} without token...")
+                    snapshot_download(
+                        repo_id=model_id,
+                        local_dir=local_dir,
+                        local_dir_use_symlinks=False,
+                        local_files_only=False
+                    )
+                    logger.info(f"Successfully downloaded model without token: {model_id}")
+                    return
+                except Exception as e:
+                    logger.warning(f"Failed to download without token: {str(e)}")
+                    # Continue to token-based download
+        except Exception as e:
+            logger.warning(f"Error checking model public status: {str(e)}")
+            # Continue to token-based download
+        
+        # Try download with token
+        try:
+            logger.info(f"Downloading {model_id} with token...")
+            snapshot_download(
+                repo_id=model_id,
+                local_dir=local_dir,
+                local_dir_use_symlinks=False,
+                local_files_only=False,
+                token=token
+            )
+            logger.info(f"Successfully downloaded model with token: {model_id}")
+        except HfHubHTTPError as e:
+            logger.error(f"HTTP error during download: {str(e)}")
+            if "401 Client Error" in str(e):
+                logger.error("Authentication error - token may be invalid or expired")
+                # Try one more time with a direct request to see what's happening
+                headers = {"Authorization": f"Bearer {token}"}
+                model_files_url = f"https://huggingface.co/api/models/{model_id}/refs/main/tree"
+                response = requests.get(model_files_url, headers=headers)
+                logger.error(f"Direct model files request status: {response.status_code}")
+                logger.error(f"Direct model files response: {response.text[:200]}")
+            raise e
     except Exception as e:
         logger.error(f"Error downloading model {model_id}: {str(e)}")
         sys.exit(1)
 
 def main():
     logger.info("Starting model download process...")
+    
+    # Print all environment variables for debugging
+    logger.debug("All environment variables:")
+    env_vars = os.environ.copy()
+    for key, value in env_vars.items():
+        if "TOKEN" in key.upper() or "API_KEY" in key.upper() or "HF_" in key.upper():
+            value_display = value[:4] + "..." if value else "Not set"
+            logger.debug(f"{key}: {value_display}")
     
     # Get token from environment variables
     for env_var in ['HUGGINGFACE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'HF_HUB_TOKEN', 'HF_API_KEY']:
@@ -92,11 +177,6 @@ def main():
     token = clean_token(token)
     logger.debug(f"Cleaned token length: {len(token) if token else 0}")
     logger.debug(f"Cleaned token starts with: {token[:4] if token else 'None'}")
-    
-    # Print all environment variables
-    logger.debug("All environment variables:")
-    for var in ['HUGGINGFACE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'HF_HUB_TOKEN', 'HF_API_KEY']:
-        logger.debug(f"{var}: {'Set' if os.getenv(var) else 'Not set'}")
     
     if not token:
         logger.error("No Hugging Face token found in environment variables")
@@ -119,7 +199,14 @@ def main():
             logger.info(f"Token verified successfully. Logged in as: {whoami}")
         except Exception as e:
             logger.error(f"Error during API verification: {str(e)}")
-            sys.exit(1)
+            logger.error("Trying direct API call as alternative verification")
+            
+            # Try direct verification again as a fallback
+            if verify_token_direct(token):
+                logger.info("Token verified through direct API call")
+            else:
+                logger.error("Both verification methods failed")
+                sys.exit(1)
         
         # Download models
         for model_id in MODEL_IDS:

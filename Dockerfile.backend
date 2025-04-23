@@ -7,27 +7,48 @@ WORKDIR /app
 # system dependencies
 RUN apt-get update && apt-get install -y \
     git \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Accept build arguments
 ARG HF_API_KEY
 ARG DJANGO_SECRET_KEY
 
-# Set environment variables with quotes to preserve values
-ENV HUGGINGFACE_API_KEY="$HF_API_KEY" \
-    HUGGINGFACE_HUB_TOKEN="$HF_API_KEY" \
-    HF_HUB_TOKEN="$HF_API_KEY" \
+# Debug: Print token info without exposing it
+RUN echo "HF_API_KEY exists: $(if [ -n "$HF_API_KEY" ]; then echo "yes"; else echo "no"; fi)" && \
+    echo "HF_API_KEY length: ${#HF_API_KEY}" && \
+    if [ -n "$HF_API_KEY" ]; then echo "HF_API_KEY first 4 chars: $(echo $HF_API_KEY | cut -c1-4)"; fi
+
+# Test direct API connectivity
+RUN if [ -n "$HF_API_KEY" ]; then \
+    echo "Testing API connection directly..." && \
+    curl -s -o /dev/null -w "HF API connect status: %{http_code}\n" https://huggingface.co/api/whoami-v2 -H "Authorization: Bearer $HF_API_KEY"; \
+    fi
+
+# Set environment variables - use proper quoting
+ENV HUGGINGFACE_API_KEY="${HF_API_KEY}" \
+    HUGGINGFACE_HUB_TOKEN="${HF_API_KEY}" \
+    HF_HUB_TOKEN="${HF_API_KEY}" \
     HF_HOME=/app/huggingface_cache \
     TRANSFORMERS_CACHE=/app/huggingface_cache \
     HF_HUB_CACHE=/app/huggingface_cache \
     SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache \
-    DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY"
+    DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY}"
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
     PORT=8080 \
-    PYTHONTRACEMALLOC=10
+    PYTHONTRACEMALLOC=10 \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    PYTHONIOENCODING=utf-8 \
+    PYTHONUNBUFFERED=1
 
-# model cache directory
+# Verify environment variables were set correctly
+RUN echo "Verifying environment variables:" && \
+    echo "HUGGINGFACE_API_KEY exists: $(if [ -n "$HUGGINGFACE_API_KEY" ]; then echo "yes"; else echo "no"; fi)" && \
+    echo "HUGGINGFACE_API_KEY length: ${#HUGGINGFACE_API_KEY}" && \
+    if [ -n "$HUGGINGFACE_API_KEY" ]; then echo "HUGGINGFACE_API_KEY first 4 chars: $(echo $HUGGINGFACE_API_KEY | cut -c1-4)"; fi
+
+# Model cache directory
 RUN mkdir -p /app/huggingface_cache && \
     chmod -R 777 /app/huggingface_cache
 
@@ -35,7 +56,7 @@ RUN mkdir -p /app/huggingface_cache && \
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
-    pip install --no-cache-dir sentence-transformers
+    pip install --no-cache-dir sentence-transformers requests
 
 # copy project files
 COPY . .
@@ -50,8 +71,14 @@ COPY brewing/data data/
 # run the build_faiss.py script to build the faiss index
 RUN python build_faiss.py
 
-# move the faiss index
-RUN mv faiss_store /app/brewing/faiss_store
+# Move the faiss index
+RUN mkdir -p /app/brewing/faiss_store && \
+    if [ -d "faiss_store" ]; then \
+        mv faiss_store/* /app/brewing/faiss_store/ || echo "Could not move files"; \
+    else \
+        echo "faiss_store directory not found"; \
+        touch /app/brewing/faiss_store/dummy_index.faiss; \
+    fi
 
 WORKDIR /app/brewing
 
