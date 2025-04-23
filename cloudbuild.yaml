@@ -21,8 +21,7 @@ steps:
         docker build \
           --build-arg BREW_WING_SECRET=$$BREW_WING_SECRET \
           -t gcr.io/$PROJECT_ID/brewwing-backend:latest \
-          -f Dockerfile.backend \
-          .
+          -f Dockerfile.backend .
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
