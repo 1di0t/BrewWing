@@ -36,14 +36,6 @@ ENV HUGGINGFACE_API_KEY=$HF_API_KEY \
     SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache \
     DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY
 
-# Verify environment variables
-RUN echo "Verifying Hugging Face environment variables..." && \
-    if [ -z "$HUGGINGFACE_API_KEY" ]; then \
-        echo "Error: HUGGINGFACE_API_KEY not set correctly" && exit 1; \
-    else \
-        echo "HUGGINGFACE_API_KEY is set"; \
-    fi
-
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
     PORT=8080 \
     PYTHONTRACEMALLOC=10
@@ -57,9 +49,6 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install --no-cache-dir sentence-transformers
-
-# Test Hugging Face authentication with thorough token validation
-RUN python -c "import os; from huggingface_hub import HfApi; token = os.environ.get('HUGGINGFACE_API_KEY'); print('Testing HF API connection...'); print(f'Token length: {len(token) if token else 0}'); print(f'Token starts with: {token[:4] if token else None}'); if not token or not token.startswith('hf_'): print('Error: Invalid token format. Token should start with hf_'); exit(1); api = HfApi(token=token); try: api.whoami(); print('HF API connection successful'); except Exception as e: print(f'Error: {str(e)}'); exit(1)"
 
 # copy project files
 COPY . .
