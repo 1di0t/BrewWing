@@ -1,6 +1,5 @@
 import os
 import sys
-import re
 import logging
 from huggingface_hub import HfApi, snapshot_download
 from transformers import AutoTokenizer, AutoModel
@@ -8,6 +7,13 @@ from transformers import AutoTokenizer, AutoModel
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# List of model IDs to download
+MODEL_IDS = [
+    "meta-llama/Llama-3.2-1B",
+    "facebook/nllb-200-distilled-600M",
+    "sentence-transformers/all-MiniLM-L6-v2",
+]
 
 def clean_token(token):
     """Clean token from any potential Cloud Build formatting issues."""
@@ -22,10 +28,6 @@ def clean_token(token):
         if actual_token:
             logger.info(f"Successfully extracted token from environment variable")
             return actual_token
-    
-    # If token doesn't start with hf_, it's likely invalid
-    if not token.startswith('hf_'):
-        logger.warning(f"Token doesn't start with 'hf_', got: {token[:4]}")
     
     return token
 
@@ -50,6 +52,27 @@ def verify_token(token):
         return False
     
     return True
+
+def download_model(model_id, token):
+    """Download a model from Hugging Face."""
+    logger.info(f"Downloading model: {model_id}")
+    try:
+        # Set model download directory
+        cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
+        local_dir = os.path.join(cache_dir, model_id.split("/")[-1])
+        
+        # Download the model
+        snapshot_download(
+            repo_id=model_id,
+            local_dir=local_dir,
+            local_dir_use_symlinks=False,
+            local_files_only=False,
+            token=token
+        )
+        logger.info(f"Successfully downloaded model: {model_id}")
+    except Exception as e:
+        logger.error(f"Error downloading model {model_id}: {str(e)}")
+        sys.exit(1)
 
 def main():
     logger.info("Starting model download process...")
@@ -98,14 +121,11 @@ def main():
             logger.error(f"Error during API verification: {str(e)}")
             sys.exit(1)
         
-        # Download model
-        logger.info("Downloading model...")
-        snapshot_download(
-            repo_id="sentence-transformers/all-MiniLM-L6-v2",
-            cache_dir="/app/huggingface_cache",
-            token=token
-        )
-        logger.info("Model downloaded successfully")
+        # Download models
+        for model_id in MODEL_IDS:
+            download_model(model_id, token)
+        
+        logger.info("All models downloaded successfully")
         
     except Exception as e:
         logger.error(f"Error during model download: {str(e)}")

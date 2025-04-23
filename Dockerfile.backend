@@ -13,35 +13,6 @@ RUN apt-get update && apt-get install -y \
 ARG HF_API_KEY
 ARG DJANGO_SECRET_KEY
 
-# Print raw variables for debugging
-RUN echo "Raw HF_API_KEY: $HF_API_KEY"
-RUN echo "Raw DJANGO_SECRET_KEY: $DJANGO_SECRET_KEY"
-
-# Extract actual token from potential variable format
-RUN if [ ! -z "$HF_API_KEY" ]; then \
-        # Remove $$ if present (Cloud Build issue)
-        ACTUAL_HF_KEY=$(echo "$HF_API_KEY" | sed 's/^\$\$//' | sed 's/^\$//' | sed 's/^HF_API_KEY=//' | sed 's/^hf_api_key=//i'); \
-        echo "Extracted HF_API_KEY: $ACTUAL_HF_KEY"; \
-        export HF_API_KEY="$ACTUAL_HF_KEY"; \
-    fi
-
-# Verify build arguments
-RUN echo "Verifying build arguments..." && \
-    if [ -z "$HF_API_KEY" ]; then \
-        echo "HF_API_KEY is not set" && exit 1; \
-    else \
-        echo "HF_API_KEY is set (length: ${#HF_API_KEY})"; \
-        echo "HF_API_KEY starts with: $(echo $HF_API_KEY | cut -c1-4)"; \
-        if ! echo "$HF_API_KEY" | grep -q "^hf_"; then \
-            echo "ERROR: HF_API_KEY must start with 'hf_', got: $HF_API_KEY" && exit 1; \
-        fi; \
-    fi && \
-    if [ -z "$DJANGO_SECRET_KEY" ]; then \
-        echo "DJANGO_SECRET_KEY is not set" && exit 1; \
-    else \
-        echo "DJANGO_SECRET_KEY is set"; \
-    fi
-
 # Set environment variables with quotes to preserve values
 ENV HUGGINGFACE_API_KEY="$HF_API_KEY" \
     HUGGINGFACE_HUB_TOKEN="$HF_API_KEY" \
@@ -83,18 +54,6 @@ RUN python build_faiss.py
 RUN mv faiss_store /app/brewing/faiss_store
 
 WORKDIR /app/brewing
-
-# Verify environment variables are set correctly
-RUN echo "Verifying environment variables..." && \
-    if [ "$HUGGINGFACE_API_KEY" != "$HF_API_KEY" ]; then \
-        echo "HUGGINGFACE_API_KEY not set correctly" && exit 1; \
-    fi && \
-    if [ "$HUGGINGFACE_HUB_TOKEN" != "$HF_API_KEY" ]; then \
-        echo "HUGGINGFACE_HUB_TOKEN not set correctly" && exit 1; \
-    fi && \
-    if [ "$HF_HUB_TOKEN" != "$HF_API_KEY" ]; then \
-        echo "HF_HUB_TOKEN not set correctly" && exit 1; \
-    fi
 
 # expose port 8080 for the server
 EXPOSE 8080
