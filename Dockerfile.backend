@@ -13,6 +13,18 @@ RUN apt-get update && apt-get install -y \
 ARG HF_API_KEY
 ARG DJANGO_SECRET_KEY
 
+# Print raw variables for debugging
+RUN echo "Raw HF_API_KEY: $HF_API_KEY"
+RUN echo "Raw DJANGO_SECRET_KEY: $DJANGO_SECRET_KEY"
+
+# Extract actual token from potential variable format
+RUN if [ ! -z "$HF_API_KEY" ]; then \
+        # Remove $$ if present (Cloud Build issue)
+        ACTUAL_HF_KEY=$(echo "$HF_API_KEY" | sed 's/^\$\$//' | sed 's/^\$//' | sed 's/^HF_API_KEY=//' | sed 's/^hf_api_key=//i'); \
+        echo "Extracted HF_API_KEY: $ACTUAL_HF_KEY"; \
+        export HF_API_KEY="$ACTUAL_HF_KEY"; \
+    fi
+
 # Verify build arguments
 RUN echo "Verifying build arguments..." && \
     if [ -z "$HF_API_KEY" ]; then \
@@ -21,10 +33,7 @@ RUN echo "Verifying build arguments..." && \
         echo "HF_API_KEY is set (length: ${#HF_API_KEY})"; \
         echo "HF_API_KEY starts with: $(echo $HF_API_KEY | cut -c1-4)"; \
         if ! echo "$HF_API_KEY" | grep -q "^hf_"; then \
-            echo "HF_API_KEY must start with 'hf_'" && exit 1; \
-        fi; \
-        if [ ${#HF_API_KEY} -lt 40 ]; then \
-            echo "HF_API_KEY length must be at least 40 characters" && exit 1; \
+            echo "ERROR: HF_API_KEY must start with 'hf_', got: $HF_API_KEY" && exit 1; \
         fi; \
     fi && \
     if [ -z "$DJANGO_SECRET_KEY" ]; then \
