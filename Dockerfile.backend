@@ -16,7 +16,7 @@ ARG DJANGO_SECRET_KEY
 
 # Debug: Print token info without exposing the entire token
 RUN echo "HF_API_KEY exists: $(if [ -n "$HUGGINGFACE_TOKEN" ]; then echo "yes"; else echo "no"; fi)" && \
-    echo "HF_API_KEY length: ${#HF_API_KEY}" && \
+    echo "HF_API_KEY length: ${#HUGGINGFACE_TOKEN}" && \
     if [ -n "$HUGGINGFACE_TOKEN" ]; then \
         echo "HF_API_KEY first 4 chars: $(echo $HUGGINGFACE_TOKEN | cut -c1-4)" && \
         echo "HF_API_KEY first 10 chars: $(echo $HUGGINGFACE_TOKEN | cut -c1-10)" && \
