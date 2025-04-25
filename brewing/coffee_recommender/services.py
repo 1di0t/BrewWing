@@ -81,7 +81,7 @@ def initialize_coffee_chain():
         logger.error(traceback.format_exc())
         raise
 
-async def recommend_coffee(query: str) -> dict:
+def recommend_coffee(query: str) -> dict:
     """
     Process user query and return the coffee recommendation.
     
@@ -102,13 +102,13 @@ async def recommend_coffee(query: str) -> dict:
     try:
         # 체인 실행 (질문 처리)
         logger.info("Invoking QA chain...")
-        answer = await coffee_qa_chain.invoke({"query": query})
+        answer = coffee_qa_chain.invoke({"query": query})
         logger.info("QA chain responded successfully")
         
         # 응답 후처리
         logger.info("Processing answer...")
-        answer['result'] = await extract_origin_text(answer['result'])
-        answer['result'] = await translate_with_linebreaks(answer['result'])
+        answer['result'] = extract_origin_text(answer['result'])
+        answer['result'] = translate_with_linebreaks(answer['result'])
         logger.info("Answer processed successfully")
         
         return {"answer": answer}

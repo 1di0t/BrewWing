@@ -26,7 +26,7 @@ except Exception as e:
     logger.error(traceback.format_exc())
 
 @ensure_csrf_cookie
-async def get_csrf_token(request):
+def get_csrf_token(request):
     logger.info("CSRF token requested")
     return JsonResponse({'csrfToken': get_token(request)})
 
@@ -35,7 +35,7 @@ class CoffeeRecommendationView(APIView):
     authentication_classes = []  # 인증 비활성화 (CSRF만 검증)
     permission_classes = [AllowAny] 
 
-    async def post(self, request):
+    def post(self, request):
         """
         POST 요청 처리: 사용자 질문 기반 커피 추천
         """
@@ -69,7 +69,7 @@ class CoffeeRecommendationView(APIView):
 
             # 서비스 계층 호출
             logger.info("Calling recommend_coffee service...")
-            recommendation = await recommend_coffee(user_query)
+            recommendation = recommend_coffee(user_query)
             logger.info("Recommendation service returned successfully")
             
             # 응답 정보 로깅 (민감 정보 제외)
@@ -103,7 +103,7 @@ class CoffeeRecommendationView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    async def get(self, request):
+    def get(self, request):
         """CSRF token request endpoint"""
         logger.info("CSRF token requested via GET /api/recommend/")
         return Response(
@@ -112,7 +112,7 @@ class CoffeeRecommendationView(APIView):
         )
 
 # 건강 체크 엔드포인트 추가
-async def health_check(request):
+def health_check(request):
     """서버 상태 및 모델 로드 상태 확인"""
     logger.info("Health check requested")
     
