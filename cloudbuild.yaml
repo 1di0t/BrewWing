@@ -23,7 +23,7 @@ steps:
     entrypoint: 'bash'
     args:
       - "-c"
-      - 'docker build --build-arg DJANGO_SECRET_KEY=$$DJANGO_SECRET_KEY --build-arg HUGGINGFACE_TOKEN=$$HUGGINGFACE_TOKEN -t gcr.io/$PROJECT_ID/brewwing-backend:latest -f brewing/react-app/Dockerfile.backend .'
+      - 'docker build --build-arg DJANGO_SECRET_KEY=$$DJANGO_SECRET_KEY --build-arg HUGGINGFACE_TOKEN=$$HUGGINGFACE_TOKEN -t gcr.io/$PROJECT_ID/brewwing-backend:latest -f ./Dockerfile.backend .'
     secretEnv: ['HUGGINGFACE_TOKEN', 'DJANGO_SECRET_KEY']
 
   - name: 'gcr.io/cloud-builders/docker'
