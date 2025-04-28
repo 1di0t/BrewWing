@@ -26,7 +26,7 @@ except Exception as e:
     logger.error(traceback.format_exc())
 
 @ensure_csrf_cookie
-async def get_csrf_token(request):
+def get_csrf_token(request):
     logger.info("CSRF token requested")
     return JsonResponse({'csrfToken': get_token(request)})
 
