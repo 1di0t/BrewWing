@@ -8,7 +8,7 @@ def create_coffee_retrieval_qa_chain(llm: BaseLLM, vectorstore: VectorStore):
     chain generation for coffee recommendation
     based on the LLM and vectorstore
     """
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 10})
     prompt_template = (
         "당신은 커피 전문가입니다. 아래의 문맥을 참고하여 질문에 답변하세요.\n"
         "문맥: {context}\n"
@@ -20,7 +20,7 @@ def create_coffee_retrieval_qa_chain(llm: BaseLLM, vectorstore: VectorStore):
     # RetrievalQA chain generation
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm, 
-        chain_type="stuff", 
+        chain_type="map_reduce", 
         retriever=retriever, 
         chain_type_kwargs={"prompt": qa_prompt}
     )
