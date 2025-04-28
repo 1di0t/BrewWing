@@ -15,7 +15,7 @@ function App() {
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        const response = await fetch(backendUrl+"/csrf/", {
+        const response = await fetch(backendUrl+"api/get_csrf_token/", {
           credentials: 'include',
         });
         const data = await response.json();
