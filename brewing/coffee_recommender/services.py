@@ -107,6 +107,7 @@ async def recommend_coffee(query: str) -> dict:
         
         # 응답 후처리
         logger.info("Processing answer...")
+        logger.info(f"Raw answer: {answer}")
         answer['result'] = await extract_origin_text(answer['result'])
         answer['result'] = await translate_with_linebreaks(answer['result'])
         logger.info("Answer processed successfully")

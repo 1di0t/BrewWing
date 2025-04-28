@@ -14,7 +14,7 @@ def extract_origin_text(data: str) -> str:
     match = re.search(r"(\nOrigin:.*?\n\n)", result_text, re.DOTALL)
 
     if match:
-        return match.group(2).strip()
+        return match.group(1).strip()
     return ""
 
 from transformers import pipeline
