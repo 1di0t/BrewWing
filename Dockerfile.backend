@@ -83,7 +83,7 @@ WORKDIR /app/brewing
 EXPOSE 8080
 
 # start the server using gunicorn
-CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 1200 --capture-output --log-level debug"]
+CMD ["sh", "-c", "exec gunicorn brewing.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 1800 --threads 4 --preload --capture-output --log-level debug --access-logfile - --error-logfile -"]
 
 
 
