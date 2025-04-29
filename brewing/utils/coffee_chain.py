@@ -43,7 +43,7 @@ def create_coffee_retrieval_qa_chain(llm: BaseLLM, vectorstore: VectorStore):
             "question_prompt": question_prompt,
             "combine_prompt": combine_prompt,
         },
-        verbose=True 
+        #verbose=True 
     )
     
     return qa_chain
