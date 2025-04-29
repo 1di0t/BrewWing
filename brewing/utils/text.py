@@ -18,19 +18,32 @@ def extract_origin_text(data: str) -> str:
         return match.group(1).strip()
     return ""
 
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
 target_lang = 'kor_Hang'  # target language
 
-translator = pipeline(
-    'translation',
-    model=model_path,
-    device=0,
-    src_lang='eng_Latn',  # input language
-    tgt_lang=target_lang,  # output language
-    max_length=512,
-    model_kwargs={"local_files_only": True}
-)
+# 명시적으로 토크나이저와 모델을 로드
+try:
+    tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path, local_files_only=True)
+    
+    # 모델과 토크나이저를 직접 전달하는 파이프라인 생성
+    translator = pipeline(
+        'translation',
+        model=model,
+        tokenizer=tokenizer,
+        device=0,
+        src_lang='eng_Latn',  # input language
+        tgt_lang=target_lang,  # output language
+        max_length=512
+    )
+except Exception as e:
+    import logging
+    logging.error(f"Error loading translation model: {str(e)}")
+    # Fallback to a dummy translator
+    def translator(texts, batch_size=1):
+        return [{"translation_text": text} for text in texts]
+
 
 def translate_with_linebreaks(text):
     """
