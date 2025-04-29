@@ -8,43 +8,51 @@ def create_coffee_retrieval_qa_chain(llm: BaseLLM, vectorstore: VectorStore):
     chain generation for coffee recommendation
     based on the LLM and vectorstore
     """
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 10})
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # 벡터 스토어 확인
+    logger.info(f"Vector store type: {type(vectorstore)}")
+    
+    # 검색 패러미터 - 다양한 원두 추천을 위해 검색 결과 수 증가
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 9})
+    logger.info("Retriever created successfully")
 
-    # create a question prompt to generate part answers
-    question_template = """다음 정보를 참고하여, 이 부분 정보에만 기반해 질문에 답변하세요.
-        [정보]
-        {context}
-        [질문]
-        {question}
-        [부분 답변]"""
-    question_prompt = PromptTemplate(
-        template=question_template,
+    # 다양한 원두 추천을 위한 프롬프트 수정
+    template = """
+    당신은 전문 커피 추천 시스템입니다. 다양한 원두의 커피를 추천해주는 역할을 합니다.
+    주어진 정보를 사용하여 사용자 질문에 맞는 커피를 추천해주세요.
+    
+    사용자가 선호하는 맛이나 특징이 무엇인지 분석하고, 가능한 다양한 원두와 지역의 커피를 추천해주세요.
+    
+    먼저, 사용자의 선호도나 질문에 가장 적합한 커피를 최소 3가지 이상 추천해주세요.
+    각 추천마다 원두의 원산지, 맛 프로필, 로스팅 정도를 반드시 포함해주세요.
+    
+    ##참고 정보
+    {context}
+    
+    ##질문
+    {question}
+    
+    ##추천
+    """
+    prompt = PromptTemplate(
+        template=template,
         input_variables=["context", "question"]
     )
+    logger.info("Prompt created successfully")
 
-    # combine answer and generate final answer
-    combine_template = """여러 부분 답변을 종합해 최종 답변을 만드세요.
-        [부분 답변들]
-        {summaries}
-        [질문]
-        {question}
-        [최종 답변]"""
-    combine_prompt = PromptTemplate(
-        template=combine_template,
-        input_variables=["summaries", "question"]
-    )
-
-    # RetrievalQA chain generation
+    # stuff 체인 타입 생성
+    logger.info("Creating RetrievalQA chain with stuff type...")
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
-        chain_type="map_reduce",
+        chain_type="stuff",  # 변경: map_reduce → stuff
         retriever=retriever,
         chain_type_kwargs={
-            "question_prompt": question_prompt,
-            "combine_prompt": combine_prompt,
+            "prompt": prompt,
         },
-        #verbose=True 
+        verbose=False
     )
     
+    logger.info("QA chain created successfully")
     return qa_chain
-
