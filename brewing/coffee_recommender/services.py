@@ -102,8 +102,41 @@ def recommend_coffee(query: str) -> dict:
     try:
         # 체인 실행 (질문 처리)
         logger.info("Invoking QA chain...")
-        answer = coffee_qa_chain.invoke({"query": query})
-        logger.info("QA chain responded successfully")
+        logger.info(f"Input query: {query}")
+        
+        # 원본 응답 저장
+        try:
+            answer = coffee_qa_chain.invoke({"query": query})
+            logger.info("QA chain responded successfully")
+            
+            # 원본 응답 전체 로깅 (디버깅용)
+            if isinstance(answer, dict) and 'result' in answer:
+                # 로그 파일에 전체 원본 응답 기록
+                log_dir = os.path.join(settings.BASE_DIR, 'logs')
+                os.makedirs(log_dir, exist_ok=True)
+                log_path = os.path.join(log_dir, "raw_response.log")
+                
+                with open(log_path, "a", encoding="utf-8") as log_file:
+                    log_file.write(f"\n----------\nQuery: {query}\n----------\n")
+                    log_file.write(f"{answer['result']}\n")
+                    log_file.write("==========\n")
+                
+                # 일반 로그에는 일부만 출력
+                raw_response = answer['result']
+                logger.info(f"Raw response length: {len(raw_response)}")
+                logger.info(f"Raw response preview: {raw_response[:500]}...")
+                
+                # 응답 구조 분석
+                line_count = raw_response.count('\n')
+                dash_count = raw_response.count('-')
+                bean_count = raw_response.lower().count('coffee bean')
+                logger.info(f"Response structure - Lines: {line_count}, Dashes: {dash_count}, 'coffee bean' mentions: {bean_count}")
+            else:
+                logger.warning(f"Unexpected answer format: {type(answer)}")
+        except Exception as e:
+            logger.error(f"Error invoking QA chain: {str(e)}")
+            logger.error(traceback.format_exc())
+            raise
         
         # 응답 후처리
         logger.info("Processing answer...")
