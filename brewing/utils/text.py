@@ -6,7 +6,7 @@ model_path = os.path.join(cache_dir, "nllb-200-distilled-600M")
 
 def extract_origin_text(data: str) -> str:
     """
-    Extract the recommendation text from the result
+    Extract the recommendation text from the result and clean any repetitive patterns
     """
     import logging
     logger = logging.getLogger(__name__)
@@ -23,16 +23,46 @@ def extract_origin_text(data: str) -> str:
         r"([\s\S]+)"  # 모든 텍스트 반환 (추출 실패 시 폴백)
     ]
     
+    extracted_text = ""
+    
     for i, pattern in enumerate(patterns):
         match = re.search(pattern, data, re.DOTALL)
         if match:
             extracted = match.group(1).strip()
             logger.info(f"Pattern {i+1} matched. Extracted {len(extracted)} characters")
-            return extracted
+            extracted_text = extracted
+            break
     
-    # 패턴 매칭 실패 시 원본 반환
-    logger.warning("All extraction patterns failed. Returning original text.")
-    return data
+    if not extracted_text:
+        logger.warning("All extraction patterns failed. Returning original text.")
+        extracted_text = data
+        
+    # 마이너스 기호(-) 반복 제거
+    clean_text = re.sub(r'-{3,}', '---', extracted_text)
+    clean_text = re.sub(r'(coffee bean\s*-\s*)+coffee bean', 'coffee bean', clean_text, flags=re.IGNORECASE)
+    
+    # 기타 반복 패턴 정리
+    repeated_phrases = [
+        r'(coffee\s+bean\s*)+',
+        r'(\s*-\s*)+',
+        r'(\*\s*)+',
+        r'(#\s*)+',
+    ]
+    
+    for pattern in repeated_phrases:
+        before_length = len(clean_text)
+        clean_text = re.sub(pattern, '\1', clean_text, flags=re.IGNORECASE)
+        after_length = len(clean_text)
+        if before_length != after_length:
+            logger.info(f"Cleaned repeated pattern: {pattern}, removed {before_length - after_length} characters")
+    
+    # 정리된 내용이 너무 짧으면 원본 사용
+    if len(clean_text) < len(extracted_text) * 0.5:
+        logger.warning(f"Cleaned text too short ({len(clean_text)} vs {len(extracted_text)}). Using original.")
+        return extracted_text
+    
+    logger.info(f"Text cleaning completed. Final length: {len(clean_text)}")
+    return clean_text
 
 from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
