@@ -14,12 +14,20 @@ def extract_origin_text(data: str) -> str:
     # 입력 데이터 로깅
     logger.info(f"Extracting text from data of length: {len(data)}")
     
+    # 예시 템플릿 문구 제거
+    # 괄호 안에 있는 템플릿 지침 제거
+    data = re.sub(r'\(\ub9db \uc124\uba85\)', '', data)
+    data = re.sub(r'\(\ub85c\uc2a4\ud305 \ub808\ubca8\)', '', data)
+    data = re.sub(r'\(\ud2b9\uc9d5 \uc124\uba85\)', '', data)
+    
     # 추천 섹션 추출 (다양한 패턴 시도)
     patterns = [
+        r"## \ucee4\ud53c \ucd94\ucc9c\s*\n(.+)",  # ## 커피 추천 뒤의 모든 텍스트
         r"##\s*\ucd94\ucc9c\s*\n(.+)",  # ##추천 뒤의 모든 텍스트
         r"\n\s*\ucd94\ucc9c[:]*\s*\n(.+)",  # "추천:" 뒤의 모든 텍스트
         r"\nOrigin:(.+?)\n\n",  # 기존 패턴
-        r"\n\s*\ucd94\ucc9c[:]*\s*(.+)",  # "추천:" 뒤의 텍스트 (개행 없음)
+        r"\n[0-9]+\.\s*\*{2}\[.+\]\s*\*{2}(.+)",  # 번호 + 굵은 글씨로 시작하는 추천
+        r"\n[0-9]+\.\s*\[.+\](.+)",  # 번호 + 일반 형식의 추천
         r"([\s\S]+)"  # 모든 텍스트 반환 (추출 실패 시 폴백)
     ]
     
@@ -31,7 +39,10 @@ def extract_origin_text(data: str) -> str:
             extracted = match.group(1).strip()
             logger.info(f"Pattern {i+1} matched. Extracted {len(extracted)} characters")
             extracted_text = extracted
-            break
+            # 첫 번째 패턴이 매칭되면 더 깊이 파싱하지 않고 바로 반환
+            if i < 2:  
+                logger.info("Found primary recommendation pattern. Using this content.")
+                break
     
     if not extracted_text:
         logger.warning("All extraction patterns failed. Returning original text.")
@@ -57,9 +68,15 @@ def extract_origin_text(data: str) -> str:
             logger.info(f"Cleaned repeated pattern: {pattern}, removed {before_length - after_length} characters")
     
     # 정리된 내용이 너무 짧으면 원본 사용
-    if len(clean_text) < len(extracted_text) * 0.5:
+    if len(clean_text) < len(extracted_text) * 0.5 and len(extracted_text) > 100:
         logger.warning(f"Cleaned text too short ({len(clean_text)} vs {len(extracted_text)}). Using original.")
         return extracted_text
+    
+    # 예시 템플릿이 그대로 나온 경우 검사
+    if "[원산지] [커피이름]" in clean_text:
+        logger.warning("Template text detected in output. Attempting to fix...")
+        # 템플릿 텍스트 대체 시도
+        clean_text = re.sub(r'\[\uc6d0\uc0b0\uc9c0\] \[\ucee4\ud53c\uc774\ub984\]', '추천 커피', clean_text)
     
     logger.info(f"Text cleaning completed. Final length: {len(clean_text)}")
     return clean_text

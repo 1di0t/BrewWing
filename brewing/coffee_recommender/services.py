@@ -123,6 +123,12 @@ def recommend_coffee(query: str) -> dict:
                 
                 # 일반 로그에는 일부만 출력
                 raw_response = answer['result']
+                print("\n======== RAW RESPONSE ========")
+                print(f"Query: {query}")
+                print("------------------------------")
+                print(raw_response)
+                print("==============================\n")
+                
                 logger.info(f"Raw response length: {len(raw_response)}")
                 logger.info(f"Raw response preview: {raw_response[:500]}...")
                 
@@ -154,6 +160,14 @@ def recommend_coffee(query: str) -> dict:
                 if extracted_text:
                     logger.info(f"Extracted text preview: {extracted_text[:100]}...")
                     logger.info(f"Extracted text length: {len(extracted_text)}")
+                    
+                    # 번역 전 추출된 텍스트 출력
+                    print("\n======== EXTRACTED TEXT ========")
+                    print(extracted_text[:1000])
+                    if len(extracted_text) > 1000:
+                        print("... (truncated)")
+                    print("===============================\n")
+                    
                     answer['result'] = extracted_text
                 else:
                     logger.warning("Text extraction returned empty string. Using original result.")
@@ -163,6 +177,14 @@ def recommend_coffee(query: str) -> dict:
                     translated = translate_with_linebreaks(answer['result'])
                     logger.info(f"Translation successful, length: {len(translated)}")
                     logger.info(f"Translated preview: {translated[:100]}...")
+                    
+                    # 번역된 최종 결과도 출력
+                    print("\n======== FINAL TRANSLATED RESULT ========")
+                    print(translated[:1000])
+                    if len(translated) > 1000:
+                        print("... (truncated)")
+                    print("======================================\n")
+                    
                     answer['result'] = translated
                 except Exception as translate_error:
                     logger.error(f"Translation error: {str(translate_error)}")
@@ -176,7 +198,7 @@ def recommend_coffee(query: str) -> dict:
             logger.warning(f"Unexpected answer format: {type(answer)}")
             answer = {"result": str(answer)}
         
-        return {"answer": answer}
+        return {"answer": raw_response}
     except Exception as e:
         logger.error(f"Error during chain invocation: {str(e)}")
         logger.error(traceback.format_exc())
