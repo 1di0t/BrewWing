@@ -107,10 +107,41 @@ def recommend_coffee(query: str) -> dict:
         
         # 응답 후처리
         logger.info("Processing answer...")
-        logger.info(f"Raw answer: {answer}")
-        answer['result'] = extract_origin_text(answer['result'])
-        answer['result'] = translate_with_linebreaks(answer['result'])
-        logger.info("Answer processed successfully")
+        logger.info(f"Raw answer type: {type(answer)}")
+        
+        # 응답 형식 확인
+        if isinstance(answer, dict) and 'result' in answer:
+            try:
+                # 질문 및 응답 기록
+                logger.info(f"Query: {query}")
+                logger.info(f"Raw answer preview: {answer['result'][:100]}...")
+                
+                # 추천 텍스트 추출
+                extracted_text = extract_origin_text(answer['result'])
+                if extracted_text:
+                    logger.info(f"Extracted text preview: {extracted_text[:100]}...")
+                    logger.info(f"Extracted text length: {len(extracted_text)}")
+                    answer['result'] = extracted_text
+                else:
+                    logger.warning("Text extraction returned empty string. Using original result.")
+                
+                # 번역 시도
+                try:
+                    translated = translate_with_linebreaks(answer['result'])
+                    logger.info(f"Translation successful, length: {len(translated)}")
+                    logger.info(f"Translated preview: {translated[:100]}...")
+                    answer['result'] = translated
+                except Exception as translate_error:
+                    logger.error(f"Translation error: {str(translate_error)}")
+                    logger.error("Keeping original text")
+                
+                logger.info("Answer processing completed")
+            except Exception as process_error:
+                logger.error(f"Error in answer processing: {str(process_error)}")
+                logger.error(traceback.format_exc())
+        else:
+            logger.warning(f"Unexpected answer format: {type(answer)}")
+            answer = {"result": str(answer)}
         
         return {"answer": answer}
     except Exception as e:
