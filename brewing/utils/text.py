@@ -3,6 +3,7 @@ import os
 
 cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 model_path = os.path.join(cache_dir, "nllb-200-distilled-600M")
+
 def extract_origin_text(data: str) -> str:
     """
     Extract the origin text from the result text
@@ -42,6 +43,7 @@ except Exception as e:
     # Fallback to a dummy translator
     def translator(texts, batch_size=1):
         return [{"translation_text": text} for text in texts]
+
 
 def translate_with_linebreaks(text):
     """
