@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .services import initialize_coffee_chain, recommend_coffee
+from .services import initialize_coffee_chain, recommend_coffee, is_initialized, direct_rag
 from django.middleware.csrf import get_token
 
 logger = logging.getLogger(__name__)
@@ -124,7 +124,6 @@ def health_check(request):
         # 시스템 정보 수집
         import platform
         import psutil
-        import torch
         
         # 기본 시스템 정보
         system_info = {
@@ -137,8 +136,15 @@ def health_check(request):
                 "percent": psutil.virtual_memory().percent
             },
             "cpu_count": psutil.cpu_count(),
-            "cuda_available": torch.cuda.is_available()
         }
+        
+        # 모델 상태 확인 - 지연 초기화 사용으로 현재 상태만 보고
+        model_status = {
+            "is_initialized": is_initialized,
+            "direct_rag_available": direct_rag is not None,
+        }
+        
+        # 지연 초기화 구현으로 실제 초기화를 시도하지 않음
         
         # 모델 디렉토리 확인
         cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
@@ -160,6 +166,7 @@ def health_check(request):
         return JsonResponse({
             "status": "healthy",
             "system_info": system_info,
+            "model_status": model_status,
             "model_directories": model_dirs,
             "faiss_indices": faiss_info
         })
