@@ -55,7 +55,7 @@ def create_coffee_retrieval_qa_chain(llm: BaseLLM, vectorstore: VectorStore):
     logger.info("Creating RetrievalQA chain with stuff type...")
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
-        chain_type="refine",
+        chain_type="stuff",
         retriever=retriever,
         chain_type_kwargs={
             "prompt": prompt,
