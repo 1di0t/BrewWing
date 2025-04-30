@@ -15,7 +15,7 @@ def create_coffee_retrieval_qa_chain(llm: BaseLLM, vectorstore: VectorStore):
     logger.info(f"Vector store type: {type(vectorstore)}")
     
     # 검색 패러미터 - 다양한 원두 추천을 위해 검색 결과 수 증가
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 9})
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
     logger.info("Retriever created successfully")
 
     # 다양한 원두 추천을 위한 프롬프트 수정
