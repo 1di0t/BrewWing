@@ -184,7 +184,7 @@ def recommend_coffee(query: str) -> dict:
         #     logger.warning(f"Unexpected answer format: {type(answer)}")
         #     answer = {"result": str(answer)}
         
-        return {"answer": answer['result']}
+        return {"answer": answer}
     except Exception as e:
         logger.error(f"Error during chain invocation: {str(e)}")
         logger.error(traceback.format_exc())
