@@ -15,14 +15,17 @@ from django.middleware.csrf import get_token
 
 logger = logging.getLogger(__name__)
 
-# try initialize the coffee chain on server startup
-try:
-    logger.info("Initializing coffee chain on server startup...")
-    initialize_coffee_chain()
-    logger.info("Coffee chain initialized successfully")
-except Exception as e:
-    logger.error(f"Failed to initialize coffee chain: {str(e)}")
-    logger.error(traceback.format_exc())
+# 지연 초기화(Lazy Initialization)를 위해 서버 시작 시 초기화하지 않음
+# try:
+#     logger.info("Initializing coffee chain on server startup...")
+#     initialize_coffee_chain()
+#     logger.info("Coffee chain initialized successfully")
+# except Exception as e:
+#     logger.error(f"Failed to initialize coffee chain: {str(e)}")
+#     logger.error(traceback.format_exc())
+
+# 대신 Health Check 엔드포인트에서만 초기화 상태 확인
+logger.info("Coffee chain will be initialized on first request (lazy initialization)")
 
 @ensure_csrf_cookie
 def get_csrf_token(request):

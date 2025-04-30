@@ -26,15 +26,32 @@ cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 logger.info(f"Hugging Face token exists: {huggingface_token is not None}")
 logger.info(f"Using cache directory: {cache_dir}")
 
-# coffee_qa_chain = None  # 기존 코드 주석 처리
+# 기존 변수 초기화
 direct_rag = None  # 새로운 DirectRAG 인스턴스 저장 변수
 
-def initialize_coffee_chain():
+# 초기화 상태 추적
+vectorstore = None
+llm = None
+is_initialized = False
+initializing = False
+
+def initialize_coffee_chain(force=False):
     """
-    Initialize the Coffee QA Chain when the server starts.
+    Initialize the Coffee QA Chain when needed.
+    Uses lazy initialization pattern - only initializes when first requested.
+    
+    Args:
+        force (bool): If True, forces reinitialization even if already initialized
     """
-    # global coffee_qa_chain  # 기존 코드 주석 처리
-    global direct_rag  # 새로운 DirectRAG 인스턴스 참조
+    global direct_rag, vectorstore, llm, is_initialized, initializing
+    
+    # 이미 초기화 중이거나 초기화되었고 강제 옵션이 아니면 바로 반환
+    if (initializing or (is_initialized and not force)):
+        logger.info("Coffee chain already initialized or initializing - skipping")
+        return
+    
+    # 초기화 시작 플래그 설정
+    initializing = True
 
     try:
         logger.info("Initializing DirectRAG system...")
@@ -73,25 +90,27 @@ def initialize_coffee_chain():
         logger.info(f"Loading LLM from: {model_path}")
         llm = load_llama_llm(model_path, token=huggingface_token)
         logger.info("LLM loaded successfully")
-
-        # 기존 체인 생성 코드 주석 처리
-        # logger.info("Creating QA chain...")
-        # coffee_qa_chain = create_coffee_retrieval_qa_chain(llm, vectorstore)
-        # logger.info("Coffee QA chain initialized successfully")
         
         # 새로운 DirectRAG 생성
         logger.info("Creating DirectRAG system...")
         direct_rag = DirectRAG(vectorstore, llm, max_docs=4)
         logger.info("DirectRAG system initialized successfully")
         
+        # 초기화 성공 플래그 설정
+        is_initialized = True
+        
     except Exception as e:
         logger.error(f"Error initializing DirectRAG system: {str(e)}")
         logger.error(traceback.format_exc())
         raise
+    finally:
+        # 초기화 중 플래그 해제
+        initializing = False
 
 def recommend_coffee(query: str) -> dict:
     """
     Process user query and return the coffee recommendation.
+    Uses lazy initialization if not already initialized.
     
     Args:
         query (str): User's input query.
@@ -99,15 +118,32 @@ def recommend_coffee(query: str) -> dict:
     Returns:
         dict: Recommendation result.
     """
-    # global coffee_qa_chain  # 기존 코드 주석 처리
-    global direct_rag  # 새로운 DirectRAG 인스턴스 참조
+    global direct_rag, is_initialized
 
     logger.info(f"Processing query: {query}")
 
-    # if coffee_qa_chain is None:  # 기존 코드 주석 처리
+    # 초기화되지 않았는지 확인하고 지연 초기화 수행
+    if not is_initialized:
+        logger.info("DirectRAG system not initialized yet. Initializing now (lazy initialization)...")
+        try:
+            initialize_coffee_chain()
+        except Exception as init_error:
+            logger.error(f"Failed to initialize on first query: {str(init_error)}")
+            return {
+                "answer": {
+                    "result": f"## 커피 추천\n\n1. **[케냐] 키암부**\n   - **맛 프로필**: 밝은 산미, 베리류 풍미\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 상큼한 산미와 깊은 단맛의 조화\n\n2. **[에티오피아] 예가체프**\n   - **맛 프로필**: 화사한 산미, 꽃향기\n   - **로스팅**: 라이트\n   - **특징**: 복합적인 향미와 과일맛\n\n3. **[콜롬비아] 우일라**\n   - **맛 프로필**: 균형 잡힌 산미, 캐러멜 풍미\n   - **로스팅**: 미디엄\n   - **특징**: 고소한 풍미와 중간 정도의 산미\n\n* 초기화 오류로 기본 추천을 제공합니다.",
+                    "_debug": {"error": "initialization_failed", "details": str(init_error)}
+                }
+            }
+
+    # DirectRAG가 초기화되지 않았는지 확인
     if direct_rag is None:
         logger.error("DirectRAG system is not initialized")
-        raise ValueError("DirectRAG system is not initialized. Call initialize_coffee_chain() first.")
+        return {
+            "answer": {
+                "result": f"## 커피 추천\n\n1. **[케냐] 키암부**\n   - **맛 프로필**: 밝은 산미, 베리류 풍미\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 상큼한 산미와 깊은 단맛의 조화\n\n2. **[에티오피아] 예가체프**\n   - **맛 프로필**: 화사한 산미, 꽃향기\n   - **로스팅**: 라이트\n   - **특징**: 복합적인 향미와 과일맛\n\n3. **[콜롬비아] 우일라**\n   - **맛 프로필**: 균형 잡힌 산미, 캐러멜 풍미\n   - **로스팅**: 미디엄\n   - **특징**: 고소한 풍미와 중간 정도의 산미\n\n* 초기화 접근 오류로 기본 추천을 제공합니다."
+            }
+        }
 
     try:
         # 기존 체인 실행 코드 주석 처리
