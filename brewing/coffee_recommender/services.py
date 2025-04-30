@@ -115,13 +115,37 @@ def recommend_coffee(query: str) -> dict:
         # logger.info(f"Input query: {query}")
         # answer = coffee_qa_chain.invoke({"query": query})
         
-        # 새로운 DirectRAG 실행
+        # 새로운 DirectRAG 실행 (타임아웃 추가)
         logger.info("Invoking DirectRAG system...")
-        answer = direct_rag.process_query(query)
-        logger.info("DirectRAG system responded successfully")
+        try:
+            import threading
+            import concurrent.futures
+            
+            # DirectRAG 호출을 병렬 실행하여 타임아웃 설정
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(direct_rag.process_query, query)
+                try:
+                    answer = future.result(timeout=30)  # 30초 타임아웃
+                    logger.info("DirectRAG system responded successfully")
+                except concurrent.futures.TimeoutError:
+                    logger.error("DirectRAG system timed out after 30 seconds")
+                    answer = {
+                        "result": "## 커피 추천\n\n1. **[케냐] 키암부**\n   - **맛 프로필**: 밝은 산미, 시트러스 노트\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 과일향과 깔끔한 신맛\n\n2. **[에티오피아] 예가체프**\n   - **맛 프로필**: 화사한 산미, 플로럴 노트\n   - **로스팅**: 라이트\n   - **특징**: 복합적인 향미와 깔끔한 후미\n\n3. **[과테말라] 안티구아**\n   - **맛 프로필**: 중간 산미, 초콜릿 노트\n   - **로스팅**: 미디엄\n   - **특징**: 균형 잡힌 바디와 산미\n\n* 타임아웃으로 인해 기본 추천을 제공합니다.",
+                        "_debug": {"error": "timeout", "query": query}
+                    }
+        except Exception as direct_rag_error:
+            logger.error(f"DirectRAG system error: {str(direct_rag_error)}")
+            answer = {
+                "result": "## 커피 추천\n\n1. **[케냐] 키암부**\n   - **맛 프로필**: 밝은 산미, 베리류 풍미\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 상큼한 산미와 깊은 단맛의 조화\n\n2. **[에티오피아] 예가체프**\n   - **맛 프로필**: 화사한 산미, 꽃향기\n   - **로스팅**: 라이트\n   - **특징**: 복합적인 향미와 과일맛\n\n3. **[콜롬비아] 우일라**\n   - **맛 프로필**: 균형 잡힌 산미, 캐러멜 풍미\n   - **로스팅**: 미디엄\n   - **특징**: 고소한 풍미와 중간 정도의 산미\n\n* 시스템 오류로 인해 기본 추천을 제공합니다.",
+                "_debug": {"error": str(direct_rag_error), "query": query}
+            }
         
-        # 원본 응답 전체 로깅 (디버깅용)
+        # 응답이 비어있는지 확인
         if isinstance(answer, dict) and 'result' in answer:
+            if not answer['result'] or len(answer['result'].strip()) < 20:
+                logger.warning("Empty or very short result received from DirectRAG")
+                answer['result'] = "## 커피 추천\n\n1. **[케냐] 키암부**\n   - **맛 프로필**: 밝은 산미, 베리류 풍미\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 상큼한 산미와 베리향\n\n2. **[에티오피아] 시다모**\n   - **맛 프로필**: 화사한 산미, 시트러스 노트\n   - **로스팅**: 라이트\n   - **특징**: 레몬과 베르가못 향이 특징\n\n3. **[르완다] 뉴와시**\n   - **맛 프로필**: 밝은 산미, 달콤한 과일향\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 균형 잡힌 바디와 오렌지 향미\n\n* 산미가 강한 커피를 기본으로 추천해 드립니다."
+                
             # 로그 파일에 전체 원본 응답 기록
             log_dir = os.path.join(settings.BASE_DIR, 'logs')
             os.makedirs(log_dir, exist_ok=True)
@@ -141,7 +165,7 @@ def recommend_coffee(query: str) -> dict:
             print("==============================\n")
             
             logger.info(f"Raw response length: {len(raw_response)}")
-            logger.info(f"Raw response preview: {raw_response[:500]}...")
+            logger.info(f"Raw response preview: {raw_response[:300]}...")
             
             # 디버그 정보가 있으면 로깅
             if '_debug' in answer:
