@@ -7,7 +7,8 @@ from django.conf import settings
 from utils.data_processing import load_and_preprocess_coffee_data
 from utils.vector_store import load_faiss_vector_store
 from utils.llama_loader import load_llama_llm
-from utils.coffee_chain import create_coffee_retrieval_qa_chain
+# from utils.coffee_chain import create_coffee_retrieval_qa_chain  # 기존 코드 주석 처리
+from utils.direct_rag import DirectRAG  # 새로운 DirectRAG 클래스 임포트
 from utils.text import extract_origin_text, translate_with_linebreaks
 
 import numpy as np
@@ -25,16 +26,18 @@ cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 logger.info(f"Hugging Face token exists: {huggingface_token is not None}")
 logger.info(f"Using cache directory: {cache_dir}")
 
-coffee_qa_chain = None
+# coffee_qa_chain = None  # 기존 코드 주석 처리
+direct_rag = None  # 새로운 DirectRAG 인스턴스 저장 변수
 
 def initialize_coffee_chain():
     """
     Initialize the Coffee QA Chain when the server starts.
     """
-    global coffee_qa_chain
+    # global coffee_qa_chain  # 기존 코드 주석 처리
+    global direct_rag  # 새로운 DirectRAG 인스턴스 참조
 
     try:
-        logger.info("Initializing coffee QA chain...")
+        logger.info("Initializing DirectRAG system...")
         
         DATA_FILE_PATH = os.path.join(settings.BASE_DIR, 'data', 'coffee_drop.csv')
         logger.info(f"Loading data from: {DATA_FILE_PATH}")
@@ -71,13 +74,18 @@ def initialize_coffee_chain():
         llm = load_llama_llm(model_path, token=huggingface_token)
         logger.info("LLM loaded successfully")
 
-        # 체인 생성
-        logger.info("Creating QA chain...")
-        coffee_qa_chain = create_coffee_retrieval_qa_chain(llm, vectorstore)
-        logger.info("Coffee QA chain initialized successfully")
+        # 기존 체인 생성 코드 주석 처리
+        # logger.info("Creating QA chain...")
+        # coffee_qa_chain = create_coffee_retrieval_qa_chain(llm, vectorstore)
+        # logger.info("Coffee QA chain initialized successfully")
+        
+        # 새로운 DirectRAG 생성
+        logger.info("Creating DirectRAG system...")
+        direct_rag = DirectRAG(vectorstore, llm, max_docs=4)
+        logger.info("DirectRAG system initialized successfully")
         
     except Exception as e:
-        logger.error(f"Error initializing coffee QA chain: {str(e)}")
+        logger.error(f"Error initializing DirectRAG system: {str(e)}")
         logger.error(traceback.format_exc())
         raise
 
@@ -91,102 +99,57 @@ def recommend_coffee(query: str) -> dict:
     Returns:
         dict: Recommendation result.
     """
-    global coffee_qa_chain
+    # global coffee_qa_chain  # 기존 코드 주석 처리
+    global direct_rag  # 새로운 DirectRAG 인스턴스 참조
 
     logger.info(f"Processing query: {query}")
 
-    if coffee_qa_chain is None:
-        logger.error("Coffee QA Chain is not initialized")
-        raise ValueError("Coffee QA Chain is not initialized. Call initialize_coffee_chain() first.")
+    # if coffee_qa_chain is None:  # 기존 코드 주석 처리
+    if direct_rag is None:
+        logger.error("DirectRAG system is not initialized")
+        raise ValueError("DirectRAG system is not initialized. Call initialize_coffee_chain() first.")
 
     try:
-        # 체인 실행 (질문 처리)
-        logger.info("Invoking QA chain...")
-        logger.info(f"Input query: {query}")
+        # 기존 체인 실행 코드 주석 처리
+        # logger.info("Invoking QA chain...")
+        # logger.info(f"Input query: {query}")
+        # answer = coffee_qa_chain.invoke({"query": query})
         
-        # 원본 응답 저장
-        try:
-            answer = coffee_qa_chain.invoke({"query": query})
-            logger.info("QA chain responded successfully")
+        # 새로운 DirectRAG 실행
+        logger.info("Invoking DirectRAG system...")
+        answer = direct_rag.process_query(query)
+        logger.info("DirectRAG system responded successfully")
+        
+        # 원본 응답 전체 로깅 (디버깅용)
+        if isinstance(answer, dict) and 'result' in answer:
+            # 로그 파일에 전체 원본 응답 기록
+            log_dir = os.path.join(settings.BASE_DIR, 'logs')
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = os.path.join(log_dir, "raw_response.log")
             
-            # 원본 응답 전체 로깅 (디버깅용)
-            if isinstance(answer, dict) and 'result' in answer:
-                # 로그 파일에 전체 원본 응답 기록
-                log_dir = os.path.join(settings.BASE_DIR, 'logs')
-                os.makedirs(log_dir, exist_ok=True)
-                log_path = os.path.join(log_dir, "raw_response.log")
-                
-                with open(log_path, "a", encoding="utf-8") as log_file:
-                    log_file.write(f"\n----------\nQuery: {query}\n----------\n")
-                    log_file.write(f"{answer['result']}\n")
-                    log_file.write("==========\n")
-                
-                # 일반 로그에는 일부만 출력
-                raw_response = answer['result']
-                print("\n======== RAW RESPONSE ========")
-                print(f"Query: {query}")
-                print("------------------------------")
-                print(raw_response)
-                print("==============================\n")
-                
-                logger.info(f"Raw response length: {len(raw_response)}")
-                logger.info(f"Raw response preview: {raw_response[:500]}...")
-                
-                # 응답 구조 분석
-                line_count = raw_response.count('\n')
-                dash_count = raw_response.count('-')
-                bean_count = raw_response.lower().count('coffee bean')
-                logger.info(f"Response structure - Lines: {line_count}, Dashes: {dash_count}, 'coffee bean' mentions: {bean_count}")
-            else:
-                logger.warning(f"Unexpected answer format: {type(answer)}")
-        except Exception as e:
-            logger.error(f"Error invoking QA chain: {str(e)}")
-            logger.error(traceback.format_exc())
-            raise
-        
-        # 응답 후처리
-        logger.info("Processing answer...")
-        logger.info(f"Raw answer type: {type(answer)}")
-        
-        # # 응답 형식 확인
-        # if isinstance(answer, dict) and 'result' in answer:
-        #     try:
-        #         # 질문 및 응답 기록
-        #         logger.info(f"Query: {query}")
-        #         logger.info(f"Raw answer preview: {answer['result'][:100]}...")
-                
-
-        #         # 추천 텍스트 추출
-        #         extracted_text = extract_origin_text(answer['result'])
-        #         if extracted_text:
-        #             logger.info(f"Extracted text preview: {extracted_text[:100]}...")
-        #             logger.info(f"Extracted text length: {len(extracted_text)}")
-        #             answer['result'] = extracted_text
-        #         else:
-        #             logger.warning("Text extraction returned empty string. Using original result.")
-                
-        #         # 번역 시도
-        #         try:
-        #             translated = translate_with_linebreaks(answer['result'])
-        #             logger.info(f"Translation successful, length: {len(translated)}")
-        #             logger.info(f"Translated preview: {translated[:100]}...")
-        #             answer['result'] = translated
-        #         except Exception as translate_error:
-        #             logger.error(f"Translation error: {str(translate_error)}")
-        #             logger.error("Keeping original text")
-
-                
-        #         logger.info("Answer processing completed")
-        #     except Exception as process_error:
-        #         logger.error(f"Error in answer processing: {str(process_error)}")
-        #         logger.error(traceback.format_exc())
-        # else:
-        #     logger.warning(f"Unexpected answer format: {type(answer)}")
-        #     answer = {"result": str(answer)}
+            with open(log_path, "a", encoding="utf-8") as log_file:
+                log_file.write(f"\n----------\nQuery: {query}\n----------\n")
+                log_file.write(f"{answer['result']}\n")
+                log_file.write("==========\n")
+            
+            # 일반 로그에는 일부만 출력
+            raw_response = answer['result']
+            print("\n======== RAW RESPONSE ========")
+            print(f"Query: {query}")
+            print("------------------------------")
+            print(raw_response)
+            print("==============================\n")
+            
+            logger.info(f"Raw response length: {len(raw_response)}")
+            logger.info(f"Raw response preview: {raw_response[:500]}...")
+            
+            # 디버그 정보가 있으면 로깅
+            if '_debug' in answer:
+                logger.info(f"Debug info: {answer['_debug']}")
         
         return {"answer": answer}
     except Exception as e:
-        logger.error(f"Error during chain invocation: {str(e)}")
+        logger.error(f"Error during DirectRAG invocation: {str(e)}")
         logger.error(traceback.format_exc())
         
         # 오류 발생 시에도 응답 형식 유지
