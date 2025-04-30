@@ -13,10 +13,9 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from .services import initialize_coffee_chain, recommend_coffee
 from django.middleware.csrf import get_token
 
-# 로깅 설정
 logger = logging.getLogger(__name__)
 
-# 초기화 시도
+# try initialize the coffee chain on server startup
 try:
     logger.info("Initializing coffee chain on server startup...")
     initialize_coffee_chain()
@@ -32,7 +31,7 @@ def get_csrf_token(request):
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class CoffeeRecommendationView(APIView):
-    authentication_classes = []  # 인증 비활성화 (CSRF만 검증)
+    authentication_classes = []  # disable authentication for this view
     permission_classes = [AllowAny] 
 
     def post(self, request):
@@ -54,7 +53,7 @@ class CoffeeRecommendationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # 시스템 정보 로깅 (디버깅용)
+            # sysytem information logging (optional)
             try:
                 import platform
                 import psutil
