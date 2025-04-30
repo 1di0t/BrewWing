@@ -70,6 +70,8 @@ class CoffeeRecommendationView(APIView):
             logger.info("Calling recommend_coffee service...")
             recommendation = recommend_coffee(user_query)
             logger.info("Recommendation service returned successfully")
+            for key, value in recommendation.items():
+                logger.info(f"{key}: {value}")
             
             # 응답 정보 로깅 (민감 정보 제외)
             result_preview = recommendation.get("answer", {}).get("result", "")[:100]
