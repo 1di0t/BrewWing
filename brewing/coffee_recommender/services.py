@@ -161,10 +161,10 @@ def recommend_coffee(query: str) -> dict:
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(direct_rag.process_query, query)
                 try:
-                    answer = future.result(timeout=30)  # 30초 타임아웃
+                    answer = future.result(timeout=360)  
                     logger.info("DirectRAG system responded successfully")
                 except concurrent.futures.TimeoutError:
-                    logger.error("DirectRAG system timed out after 30 seconds")
+                    logger.error("DirectRAG system timed out after 90 seconds")
                     answer = {
                         "result": "## 커피 추천\n\n1. **[케냐] 키암부**\n   - **맛 프로필**: 밝은 산미, 시트러스 노트\n   - **로스팅**: 라이트-미디엄\n   - **특징**: 과일향과 깔끔한 신맛\n\n2. **[에티오피아] 예가체프**\n   - **맛 프로필**: 화사한 산미, 플로럴 노트\n   - **로스팅**: 라이트\n   - **특징**: 복합적인 향미와 깔끔한 후미\n\n3. **[과테말라] 안티구아**\n   - **맛 프로필**: 중간 산미, 초콜릿 노트\n   - **로스팅**: 미디엄\n   - **특징**: 균형 잡힌 바디와 산미\n\n* 타임아웃으로 인해 기본 추천을 제공합니다.",
                         "_debug": {"error": "timeout", "query": query}

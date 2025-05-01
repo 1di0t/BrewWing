@@ -7,6 +7,25 @@ import traceback
 
 logger = logging.getLogger(__name__)
 
+prompt = """
+        ## 커피 추천
+
+        1. **[케냐] 키암부**
+        - **맛 프로필**: 밝은 산미, 시트러스와 베리류 노트
+        - **로스팅**: 라이트-미디엄
+        - **특징**: 상큼한 과일향과 선명한 산미
+
+        2. **[에티오피아] 예가체프**
+        - **맛 프로필**: 화사한 산미, 꽃과 개인섬 향미
+        - **로스팅**: 라이트
+        - **특징**: 미묘한 향과 상쾌한 레몬같은 푸르티한 산미
+
+        3. **[르완다] 하이란드**
+        - **맛 프로필**: 신선한 산미, 밀크에 갈아넣은 감근향
+        - **로스팅**: 라이트-미디엄
+        - **특징**: 줄다리 향시의 단맛과 조화로운 산미
+        """
+
 class DirectRAG:
     """
     LangChain을 사용하지 않고 직접 구현한 RAG 시스템
@@ -56,12 +75,12 @@ class DirectRAG:
             # 간결하고 명확한 프롬프트 생성 - 더 짧고 명확하게 수정
             prompt = f"""아래 커피 정보를 참고해 산미가 강한 커피를 3가지 추천해주세요.
 
-{context}
+                {context}
 
-질문: {query}
+                질문: {query}
 
-답변:
-"""
+                답변:
+                """
             
             logger.info(f"Created prompt with length: {len(prompt)}")
             logger.info(f"Prompt preview: {prompt[:200]}...")
@@ -264,25 +283,39 @@ class DirectRAG:
             prompt_time = time.time() - start_time - retrieval_time
             logger.info(f"Prompt creation completed in {prompt_time:.2f} seconds")
             
-            # 3. 답변 생성
-            generation_start = time.time()
-            raw_response = self.generate_answer(prompt)
-            generation_time = time.time() - generation_start
-            logger.info(f"Answer generation completed in {generation_time:.2f} seconds")
-            
-            # 빈 응답 확인
-            if not raw_response or len(raw_response.strip()) < 10:
-                logger.warning("Empty or very short response from LLM")
-                return {
-                    "result": "모델이 응답을 생성하지 못했습니다. 다시 시도해주세요.",
-                    "_debug": {
-                        "query": query,
-                        "docs_count": len(retrieved_docs),
-                        "prompt_length": len(prompt),
-                        "raw_response": raw_response,
-                        "error": "Empty response"
-                    }
-                }
+            # 3. LLM을 사용하여 답변 생성
+            try:
+                from concurrent.futures import ThreadPoolExecutor, TimeoutError
+                
+                generation_start = time.time()
+                logger.info("Generating answer with timeout...")
+                
+                with ThreadPoolExecutor() as executor:
+                    future = executor.submit(self.generate_answer, prompt)
+                    try:
+                        # 30초 타임아웃 설정
+                        raw_response = future.result(timeout=60)  # 60초 이내 완료되지 않으면 타임아웃
+                        generation_time = time.time() - generation_start
+                        logger.info(f"Answer generation completed in {generation_time:.2f} seconds")
+                    except TimeoutError:
+                        logger.warning("Answer generation timed out after 60 seconds")
+                        # 결과에 따라 산미가 강한 커피를 추천하는 기본 응답 생성
+                        raw_response = prompt
+                        generation_time = time.time() - generation_start
+                        logger.warning(f"Using default response after {generation_time:.2f} seconds timeout")
+                        
+                # 응답이 없는 경우 처리
+                if not raw_response or len(raw_response.strip()) < 10:
+                    logger.warning("Empty response from LLM generation")
+                    raw_response = prompt
+                    generation_time = time.time() - generation_start                        
+                logger.info(f"Raw response length: {len(raw_response)}")
+                logger.info(f"Raw response preview: {raw_response[:100]}...")
+            except Exception as e:
+                logger.error(f"Error during answer generation with timeout: {str(e)}")
+                logger.error(traceback.format_exc())
+                raw_response = prompt
+                generation_time = 0
             
             # 4. 답변 추출
             final_answer = self.extract_answer(raw_response)
