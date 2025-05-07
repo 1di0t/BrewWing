@@ -97,7 +97,8 @@ def load_llama_llm(model_name_or_path="meta-llama/Llama-3.2-1B", token=None):
             "text-generation",
             model=model,
             tokenizer=tokenizer,
-            max_new_tokens=256,  # 더 긴 응답 허용
+            load_in_4bit=True,
+            max_new_tokens=100,  # 더 긴 응답 허용
             truncation=True,
             temperature=0.5,     # 낮은 온도로 더 집중된 응답
             top_p=0.9,
