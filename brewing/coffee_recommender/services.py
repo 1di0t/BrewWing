@@ -25,8 +25,10 @@ cache_dir = os.getenv("HF_HOME", "/app/huggingface_cache")
 logger.info(f"Hugging Face token exists: {huggingface_token is not None}")
 
 direct_rag = None  # DirectRAG 인스턴스 저장 변수
+is_initialized = False  # 초기화 상태를 추적하는 변수
 
 def initialize_coffee_chain():
+    global is_initialized
     """
     Initialize the Coffee QA Chain when needed.
     Uses lazy initialization pattern - only initializes when first requested.
@@ -69,6 +71,7 @@ def initialize_coffee_chain():
         logger.info("Creating DirectRAG system...")
         direct_rag = DirectRAG(vectorstore, max_docs=4)
         logger.info("DirectRAG system initialized successfully")
+        is_initialized = True
         
     except Exception as e:
         logger.error(f"Error initializing DirectRAG system: {str(e)}")
@@ -85,7 +88,7 @@ def recommend_coffee(query: str) -> dict:
     Returns:
         dict: Recommendation result.
     """
-    global direct_rag
+    global direct_rag, is_initialized
 
     logger.info(f"Processing query: {query}")
 

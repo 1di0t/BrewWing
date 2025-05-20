@@ -101,6 +101,7 @@ class DirectRAG:
                 
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future = executor.submit(self.hf_api.generate_text, prompt)
+                    logger.info("Waiting for API response...")
                     try:
                         # 30초 타임아웃 설정
                         raw_response = future.result(timeout=30)
@@ -122,7 +123,7 @@ class DirectRAG:
                 logger.error(traceback.format_exc())
                 raw_response = f"## 커피 추천\n{DEFAULT_RECOMMENDATIONS}"
                 generation_time = time.time() - generation_start
-            
+            logger.debug(f"HuggingFace response: {raw_response}")
             # 4. 답변 추출
             final_answer = extract_answer(raw_response)
             extraction_time = time.time() - start_time - retrieval_time - prompt_time - generation_time
