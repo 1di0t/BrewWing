@@ -19,7 +19,10 @@ class HuggingFaceAPI:
     
     def __init__(self):
         self.headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
-        logger.info("HuggingFaceAPI initialized")
+        if HF_API_TOKEN == "YOUR_HF_API_TOKEN" or not HF_API_TOKEN:
+            logger.warning("Hugging Face API token is not properly set. API calls will not work correctly.")
+        else:
+            logger.info("HuggingFaceAPI initialized with API token")
     
     def generate_text(self, prompt: str, max_tokens: int = 512, temperature: float = 0.3) -> str:
         """
