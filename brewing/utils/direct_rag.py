@@ -129,15 +129,24 @@ class DirectRAG:
             extraction_time = time.time() - start_time - retrieval_time - prompt_time - generation_time
             logger.info(f"Answer extraction completed in {extraction_time:.2f} seconds")
             
-            # 5. 결과 반환
+            # 5. 결과 반환 - 원본 문서 정보 추가
             total_time = time.time() - start_time
             logger.info(f"Total processing completed in {total_time:.2f} seconds")
+            
+            # 원본 문서 정보 추가
+            original_docs = []
+            for doc in retrieved_docs:
+                original_docs.append({
+                    "content_preview": doc["content"][:200] + "..." if len(doc["content"]) > 200 else doc["content"],
+                    "metadata": doc["metadata"]
+                })
             
             return {
                 "result": final_answer,
                 "_debug": {
                     "query": query,
                     "docs_count": len(retrieved_docs),
+                    "docs": original_docs,  # 원본 문서 정보 추가
                     "prompt_length": len(prompt),
                     "raw_response_length": len(raw_response),
                     "times": {
