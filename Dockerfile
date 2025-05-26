@@ -37,7 +37,8 @@ ENV HUGGINGFACE_API_KEY="${HUGGINGFACE_TOKEN}" \
     TRANSFORMERS_CACHE=/app/huggingface_cache \
     HF_HUB_CACHE=/app/huggingface_cache \
     SENTENCE_TRANSFORMERS_HOME=/app/huggingface_cache \
-    DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY}"
+    DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY}" \
+    PYTHONPATH=/app
 
 ENV DJANGO_SETTINGS_MODULE=brewing.settings \
     PORT=8080 \
@@ -62,7 +63,7 @@ COPY . .
 RUN python scripts/download_model.py
 
 # run the build_faiss.py script to build the faiss index
-RUN python scripts/build_faiss.py
+RUN cd /app && python scripts/build_faiss.py
 
 # Move the faiss index
 RUN mkdir -p /app/brewing/faiss_store && \
