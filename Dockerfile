@@ -59,14 +59,10 @@ RUN pip install --upgrade pip && \
 COPY . .
 
 # run the download_model.py script to download the model files
-RUN python download_model.py
-
-# copy the faiss index and build_faiss.py script
-COPY build_faiss.py .
-COPY brewing/data data/   
+RUN python scripts/download_model.py
 
 # run the build_faiss.py script to build the faiss index
-RUN python build_faiss.py
+RUN python scripts/build_faiss.py
 
 # Move the faiss index
 RUN mkdir -p /app/brewing/faiss_store && \
